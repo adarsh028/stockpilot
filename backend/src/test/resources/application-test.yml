@@ -1,0 +1,23 @@
+spring:
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: false
+  flyway:
+    enabled: true
+
+app:
+  seed:
+    demo-enabled: false
+  jwt:
+    secret: test-secret-key-that-is-definitely-at-least-256-bits-long-for-hs512-000000
+    access-ttl-minutes: 15
+    refresh-ttl-days: 30
+
+brevo:
+  api-key: ""
+
+logging:
+  level:
+    com.stockpilot: INFO
+    org.testcontainers: INFO

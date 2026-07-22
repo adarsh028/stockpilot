@@ -1,0 +1,4 @@
+sku,channel,quantity,unitPrice,saleDate,marketplaceOrderId
+TSHIRT-BLK-M,Amazon,2,499.00,2026-07-01,AMZ-1001
+EARBUDS-WHT,Flipkart,1,1499.00,2026-07-02,FK-5521
+TSHIRT-BLK-L,Own Website,3,499.00,2026-07-03,

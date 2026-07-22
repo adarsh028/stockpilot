@@ -1,0 +1,4 @@
+name,category,brandName,sku,costPrice,sellingPrice,quantityOnHand,reorderLevel
+Classic Cotton T-Shirt,Apparel,Acme,TSHIRT-BLK-M,180.00,499.00,120,20
+Classic Cotton T-Shirt,Apparel,Acme,TSHIRT-BLK-L,180.00,499.00,90,20
+Wireless Earbuds,Electronics,Acme,EARBUDS-WHT,650.00,1499.00,60,15

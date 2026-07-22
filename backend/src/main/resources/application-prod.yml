@@ -1,0 +1,11 @@
+spring:
+  jpa:
+    show-sql: false
+
+app:
+  seed:
+    demo-enabled: false
+
+logging:
+  level:
+    com.stockpilot: INFO

@@ -1,0 +1,27 @@
+# Maven / build output
+target/
+
+# Logs
+*.log
+boot.log
+
+# Runtime data
+data/
+
+# IDE
+.idea/
+*.iml
+.vscode/
+.settings/
+.project
+.classpath
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Environment
+*.env
+.env
+application-local.properties
+application-local.yml
