@@ -48,7 +48,7 @@ export default function VerifyOtp() {
     <AuthShell title="Verify your account" subtitle="Enter the 6-digit code sent to your email">
       <form onSubmit={onSubmit} className="space-y-4">
         {error && <ErrorState message={error} />}
-        {info && <p className="rounded-md bg-emerald-50 px-3 py-2 text-sm text-emerald-700">{info}</p>}
+        {info && <p className="rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-700">{info}</p>}
         <Input label="Email or phone" value={identifier} onChange={(e) => setIdentifier(e.target.value)} required />
         <Input
           label="Verification code"
@@ -70,7 +70,7 @@ export default function VerifyOtp() {
           Back to login
         </Link>
       </div>
-      <p className="mt-4 rounded-md bg-amber-50 p-3 text-xs text-amber-700">
+      <p className="mt-4 rounded-lg border border-amber-200 bg-amber-50 p-3 text-xs text-amber-700">
         No email service configured? The OTP is printed in the backend console, labeled
         <span className="font-mono"> [DEV EMAIL FALLBACK]</span>.
       </p>

@@ -2,8 +2,9 @@ import { useEffect, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { orgApi } from "@/api/users";
 import { googleDriveApi } from "@/api/integrations";
-import { Button, Card, Input } from "@/components/ui";
+import { Button, Card, Input, PageHeader } from "@/components/ui";
 import { ErrorState, LoadingSpinner } from "@/components/states";
+import { CheckCircleIcon } from "@/components/icons";
 import { apiErrorMessage } from "@/api/client";
 import { useAuth } from "@/context/AuthContext";
 
@@ -33,21 +34,21 @@ export default function Settings() {
 
   return (
     <div className="mx-auto max-w-2xl space-y-6">
-      <h1 className="text-2xl font-bold text-slate-800">Settings</h1>
+      <PageHeader title="Settings" subtitle="Manage your organization and integrations" />
 
       <GoogleDriveCard canManage={isOwner || user?.role === "ADMIN"} isOwner={isOwner} />
 
       <Card className="space-y-4">
-        <h2 className="font-semibold text-slate-700">Organization profile</h2>
+        <h2 className="text-sm font-semibold text-slate-800">Organization profile</h2>
         <Input label="Organization name" value={name} onChange={(e) => setName(e.target.value)} disabled={!isOwner} />
-        <div className="grid grid-cols-2 gap-4 text-sm text-slate-500">
-          <div>
-            <span className="block text-xs uppercase text-slate-400">Slug</span>
-            {org.data?.slug}
+        <div className="grid grid-cols-2 gap-4">
+          <div className="rounded-lg border border-slate-200 bg-slate-50/60 px-3 py-2.5">
+            <span className="block text-[11px] font-semibold uppercase tracking-wider text-slate-400">Slug</span>
+            <span className="text-sm text-slate-700">{org.data?.slug}</span>
           </div>
-          <div>
-            <span className="block text-xs uppercase text-slate-400">Plan</span>
-            {org.data?.plan}
+          <div className="rounded-lg border border-slate-200 bg-slate-50/60 px-3 py-2.5">
+            <span className="block text-[11px] font-semibold uppercase tracking-wider text-slate-400">Plan</span>
+            <span className="text-sm text-slate-700">{org.data?.plan}</span>
           </div>
         </div>
         {isOwner && (
@@ -55,7 +56,11 @@ export default function Settings() {
             <Button onClick={() => save.mutate()} disabled={save.isPending}>
               {save.isPending ? "Saving..." : "Save changes"}
             </Button>
-            {saved && <span className="text-sm text-emerald-600">Saved ✓</span>}
+            {saved && (
+              <span className="inline-flex items-center gap-1.5 text-sm font-medium text-emerald-600">
+                <CheckCircleIcon className="text-base" /> Saved
+              </span>
+            )}
           </div>
         )}
         {save.isError && <ErrorState message={apiErrorMessage(save.error)} />}
@@ -114,7 +119,7 @@ function GoogleDriveCard({ canManage, isOwner }: { canManage: boolean; isOwner: 
 
   return (
     <Card className="space-y-3">
-      <h2 className="font-semibold text-slate-700">Google Drive storage</h2>
+      <h2 className="text-sm font-semibold text-slate-800">Google Drive storage</h2>
       <p className="text-sm text-slate-500">
         Product images are stored in your organization's own Google Drive. Connect an account below;
         images uploaded to variants are saved there and streamed back when you open a product.
@@ -122,8 +127,10 @@ function GoogleDriveCard({ canManage, isOwner }: { canManage: boolean; isOwner: 
 
       {banner && (
         <p
-          className={`rounded-md px-3 py-2 text-sm ${
-            banner.kind === "ok" ? "bg-emerald-50 text-emerald-700" : "bg-red-50 text-red-700"
+          className={`rounded-lg border px-3 py-2 text-sm ${
+            banner.kind === "ok"
+              ? "border-emerald-200 bg-emerald-50 text-emerald-700"
+              : "border-red-200 bg-red-50 text-red-700"
           }`}
         >
           {banner.text}
@@ -133,22 +140,23 @@ function GoogleDriveCard({ canManage, isOwner }: { canManage: boolean; isOwner: 
       {status.isLoading ? (
         <p className="text-sm text-slate-400">Checking connection…</p>
       ) : !data?.configured ? (
-        <p className="rounded-md bg-amber-50 px-3 py-2 text-sm text-amber-700">
+        <p className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-700">
           Google Drive is not configured on the server. Set{" "}
-          <code className="rounded bg-slate-100 px-1 text-xs">GOOGLE_CLIENT_ID</code> and{" "}
-          <code className="rounded bg-slate-100 px-1 text-xs">GOOGLE_CLIENT_SECRET</code>.
+          <code className="rounded bg-white/70 px-1 font-mono text-xs">GOOGLE_CLIENT_ID</code> and{" "}
+          <code className="rounded bg-white/70 px-1 font-mono text-xs">GOOGLE_CLIENT_SECRET</code>.
         </p>
       ) : connected ? (
-        <div className="flex items-center justify-between gap-4">
+        <div className="flex items-center justify-between gap-4 rounded-lg border border-slate-200 bg-slate-50/60 px-3 py-2.5">
           <div className="text-sm">
-            <span className="inline-flex items-center gap-1 font-medium text-emerald-600">
-              ● Connected
+            <span className="inline-flex items-center gap-2 font-medium text-emerald-700">
+              <span className="h-2 w-2 rounded-full bg-emerald-500" /> Connected
             </span>
             {data?.email && <span className="ml-2 text-slate-500">{data.email}</span>}
           </div>
           {isOwner && (
             <Button
               variant="secondary"
+              size="sm"
               onClick={() => disconnect.mutate()}
               disabled={disconnect.isPending}
             >

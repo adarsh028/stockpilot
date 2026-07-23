@@ -2,8 +2,9 @@ import { FormEvent, useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { productsApi } from "@/api/products";
-import { Button, Card, Input } from "@/components/ui";
+import { Button, Card, Input, PageHeader } from "@/components/ui";
 import { ErrorState, LoadingSpinner } from "@/components/states";
+import { PlusIcon, TrashIcon } from "@/components/icons";
 import { apiErrorMessage } from "@/api/client";
 import { SkuInput } from "@/types/api";
 import SkuImageManager from "@/components/SkuImageManager";
@@ -77,13 +78,17 @@ export default function ProductForm() {
   if (editing && existing.isLoading) return <LoadingSpinner />;
 
   return (
-    <div className="mx-auto max-w-3xl space-y-4">
-      <h1 className="text-2xl font-bold text-slate-800">{editing ? "Edit product" : "New product"}</h1>
-      <form onSubmit={onSubmit} className="space-y-4">
+    <div className="mx-auto max-w-3xl space-y-6">
+      <PageHeader
+        title={editing ? "Edit product" : "New product"}
+        subtitle="Product details and their sellable variants"
+      />
+      <form onSubmit={onSubmit} className="space-y-5">
         {error && <ErrorState message={error} />}
         <Card className="space-y-4">
+          <h2 className="text-sm font-semibold text-slate-800">Details</h2>
           <Input label="Name" value={name} onChange={(e) => setName(e.target.value)} required />
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <Input label="Category" value={category} onChange={(e) => setCategory(e.target.value)} />
             <Input label="Brand" value={brandName} onChange={(e) => setBrandName(e.target.value)} />
           </div>
@@ -92,32 +97,38 @@ export default function ProductForm() {
 
         <Card className="space-y-4">
           <div className="flex items-center justify-between">
-            <h2 className="font-semibold text-slate-700">SKUs / Variants</h2>
-            <Button type="button" variant="secondary" onClick={() => setSkus([...skus, { ...emptySku }])}>
-              + Add SKU
+            <h2 className="text-sm font-semibold text-slate-800">SKUs / Variants</h2>
+            <Button type="button" variant="secondary" size="sm" onClick={() => setSkus([...skus, { ...emptySku }])}>
+              <PlusIcon className="text-base" /> Add SKU
             </Button>
           </div>
           {skus.map((s, i) => (
-            <div key={i} className="grid grid-cols-1 gap-3 rounded-lg border border-slate-100 p-3 sm:grid-cols-6">
-              <div className="sm:col-span-2">
-                <Input label="SKU code" value={s.sku} onChange={(e) => updateSku(i, "sku", e.target.value)} required />
-              </div>
-              <Input label="Cost" type="number" value={s.costPrice ?? 0} onChange={(e) => updateSku(i, "costPrice", e.target.value)} />
-              <Input label="Price" type="number" value={s.sellingPrice ?? 0} onChange={(e) => updateSku(i, "sellingPrice", e.target.value)} />
-              <Input label="Qty" type="number" value={s.quantityOnHand ?? 0} onChange={(e) => updateSku(i, "quantityOnHand", e.target.value)} />
-              <div className="flex items-end gap-2">
-                <Input label="Reorder" type="number" value={s.reorderLevel ?? 0} onChange={(e) => updateSku(i, "reorderLevel", e.target.value)} />
+            <div key={i} className="rounded-xl border border-slate-200 bg-slate-50/40 p-4">
+              <div className="mb-3 flex items-center justify-between">
+                <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-400">
+                  Variant {i + 1}
+                </span>
                 {skus.length > 1 && (
                   <button
                     type="button"
                     onClick={() => setSkus(skus.filter((_, idx) => idx !== i))}
-                    className="mb-2 text-red-500 hover:text-red-700"
+                    title="Remove variant"
+                    className="rounded-md p-1.5 text-slate-400 transition hover:bg-red-50 hover:text-red-600"
                   >
-                    ✕
+                    <TrashIcon className="text-base" />
                   </button>
                 )}
               </div>
-              <div className="border-t border-slate-100 pt-3 sm:col-span-6">
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-6">
+                <div className="sm:col-span-2">
+                  <Input label="SKU code" value={s.sku} onChange={(e) => updateSku(i, "sku", e.target.value)} required />
+                </div>
+                <Input label="Cost" type="number" value={s.costPrice ?? 0} onChange={(e) => updateSku(i, "costPrice", e.target.value)} />
+                <Input label="Price" type="number" value={s.sellingPrice ?? 0} onChange={(e) => updateSku(i, "sellingPrice", e.target.value)} />
+                <Input label="Qty" type="number" value={s.quantityOnHand ?? 0} onChange={(e) => updateSku(i, "quantityOnHand", e.target.value)} />
+                <Input label="Reorder" type="number" value={s.reorderLevel ?? 0} onChange={(e) => updateSku(i, "reorderLevel", e.target.value)} />
+              </div>
+              <div className="mt-4 border-t border-slate-200 pt-4">
                 {s.id ? (
                   <SkuImageManager skuId={s.id} />
                 ) : (

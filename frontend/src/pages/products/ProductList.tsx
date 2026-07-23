@@ -2,8 +2,9 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { productsApi } from "@/api/products";
-import { Button, Card, Input } from "@/components/ui";
+import { Button, Card, Input, PageHeader, Pagination } from "@/components/ui";
 import { Badge, EmptyState, ErrorState, LoadingSpinner } from "@/components/states";
+import { EditIcon, PlusIcon, ProductsIcon, SearchIcon, TrashIcon, UploadIcon } from "@/components/icons";
 import { apiErrorMessage } from "@/api/client";
 import { useAuth } from "@/context/AuthContext";
 import { Product } from "@/types/api";
@@ -22,9 +23,19 @@ function primaryImage(p: Product): string | null {
 
 function Thumbnail({ src }: { src: string | null }) {
   if (!src) {
-    return <div className="h-10 w-10 shrink-0 rounded-md bg-slate-100" />;
+    return (
+      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-slate-100 text-base text-slate-300">
+        <ProductsIcon />
+      </div>
+    );
   }
-  return <img src={src} alt="" className="h-10 w-10 shrink-0 rounded-md border border-slate-200 object-cover" />;
+  return (
+    <img
+      src={src}
+      alt=""
+      className="h-10 w-10 shrink-0 rounded-lg border border-slate-200 object-cover"
+    />
+  );
 }
 
 export default function ProductList() {
@@ -46,31 +57,38 @@ export default function ProductList() {
   });
 
   return (
-    <div className="space-y-4">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <h1 className="text-2xl font-bold text-slate-800">Products</h1>
+    <div className="space-y-6">
+      <PageHeader title="Products" subtitle="Your product catalog and variants">
         {canEdit && (
-          <div className="flex gap-2">
+          <>
             <Link to="/products/import">
-              <Button variant="secondary">Import CSV/Excel</Button>
+              <Button variant="secondary">
+                <UploadIcon className="text-base" /> Import CSV/Excel
+              </Button>
             </Link>
             <Link to="/products/new">
-              <Button>+ New product</Button>
+              <Button>
+                <PlusIcon className="text-base" /> New product
+              </Button>
             </Link>
-          </div>
+          </>
         )}
-      </div>
+      </PageHeader>
 
       <Card>
         <div className="mb-4 max-w-sm">
-          <Input
-            placeholder="Search by name, brand, category..."
-            value={search}
-            onChange={(e) => {
-              setSearch(e.target.value);
-              setPage(0);
-            }}
-          />
+          <div className="relative">
+            <SearchIcon className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-base text-slate-400" />
+            <Input
+              placeholder="Search by name, brand, category..."
+              className="pl-9"
+              value={search}
+              onChange={(e) => {
+                setSearch(e.target.value);
+                setPage(0);
+              }}
+            />
+          </div>
         </div>
 
         {query.isLoading ? (
@@ -78,52 +96,60 @@ export default function ProductList() {
         ) : query.isError ? (
           <ErrorState message={apiErrorMessage(query.error)} />
         ) : query.data && query.data.content.length === 0 ? (
-          <EmptyState title="No products yet" hint="Create one or import a spreadsheet." />
+          <EmptyState
+            icon={<ProductsIcon />}
+            title="No products yet"
+            hint="Create one or import a spreadsheet to get started."
+          />
         ) : (
           <>
             <div className="overflow-x-auto">
-              <table className="w-full text-sm">
+              <table className="data-table">
                 <thead>
-                  <tr className="border-b border-slate-100 text-left text-slate-500">
-                    <th className="py-2">Name</th>
-                    <th className="py-2">Category</th>
-                    <th className="py-2">Brand</th>
-                    <th className="py-2 text-center">SKUs</th>
-                    <th className="py-2">Status</th>
-                    {canEdit && <th className="py-2 text-right">Actions</th>}
+                  <tr>
+                    <th>Name</th>
+                    <th>Category</th>
+                    <th>Brand</th>
+                    <th className="text-center">SKUs</th>
+                    <th>Status</th>
+                    {canEdit && <th className="text-right">Actions</th>}
                   </tr>
                 </thead>
                 <tbody>
                   {query.data?.content.map((p) => (
-                    <tr key={p.id} className="border-b border-slate-50 hover:bg-slate-50">
-                      <td className="py-2 font-medium text-slate-700">
+                    <tr key={p.id}>
+                      <td className="font-medium text-slate-800">
                         <div className="flex items-center gap-3">
                           <Thumbnail src={primaryImage(p)} />
                           <span>{p.name}</span>
                         </div>
                       </td>
-                      <td className="py-2 text-slate-500">{p.category ?? "—"}</td>
-                      <td className="py-2 text-slate-500">{p.brandName ?? "—"}</td>
-                      <td className="py-2 text-center">{p.skus.length}</td>
-                      <td className="py-2">
+                      <td>{p.category ?? "—"}</td>
+                      <td>{p.brandName ?? "—"}</td>
+                      <td className="text-center tabular-nums">{p.skus.length}</td>
+                      <td>
                         <Badge color={p.status === "ACTIVE" ? "green" : "slate"}>{p.status}</Badge>
                       </td>
                       {canEdit && (
-                        <td className="py-2 text-right">
-                          <button
-                            onClick={() => navigate(`/products/${p.id}/edit`)}
-                            className="mr-3 text-brand-600 hover:underline"
-                          >
-                            Edit
-                          </button>
-                          <button
-                            onClick={() => {
-                              if (confirm(`Delete "${p.name}"?`)) remove.mutate(p.id);
-                            }}
-                            className="text-red-600 hover:underline"
-                          >
-                            Delete
-                          </button>
+                        <td className="text-right">
+                          <div className="flex items-center justify-end gap-1">
+                            <button
+                              onClick={() => navigate(`/products/${p.id}/edit`)}
+                              title="Edit"
+                              className="rounded-md p-1.5 text-slate-400 transition hover:bg-slate-100 hover:text-brand-600"
+                            >
+                              <EditIcon className="text-base" />
+                            </button>
+                            <button
+                              onClick={() => {
+                                if (confirm(`Delete "${p.name}"?`)) remove.mutate(p.id);
+                              }}
+                              title="Delete"
+                              className="rounded-md p-1.5 text-slate-400 transition hover:bg-red-50 hover:text-red-600"
+                            >
+                              <TrashIcon className="text-base" />
+                            </button>
+                          </div>
                         </td>
                       )}
                     </tr>
@@ -133,19 +159,14 @@ export default function ProductList() {
             </div>
 
             {query.data && query.data.totalPages > 1 && (
-              <div className="mt-4 flex items-center justify-between text-sm">
-                <span className="text-slate-500">
-                  Page {query.data.page + 1} of {query.data.totalPages}
-                </span>
-                <div className="flex gap-2">
-                  <Button variant="secondary" disabled={query.data.first} onClick={() => setPage((p) => p - 1)}>
-                    Previous
-                  </Button>
-                  <Button variant="secondary" disabled={query.data.last} onClick={() => setPage((p) => p + 1)}>
-                    Next
-                  </Button>
-                </div>
-              </div>
+              <Pagination
+                page={query.data.page}
+                totalPages={query.data.totalPages}
+                first={query.data.first}
+                last={query.data.last}
+                onPrev={() => setPage((p) => p - 1)}
+                onNext={() => setPage((p) => p + 1)}
+              />
             )}
           </>
         )}

@@ -4,8 +4,9 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { salesApi, SaleInput } from "@/api/sales";
 import { channelsApi } from "@/api/channels";
 import { inventoryApi } from "@/api/inventory";
-import { Button, Card, Input, Modal, Select, formatCurrency } from "@/components/ui";
+import { Button, Card, Input, Modal, PageHeader, Pagination, Select, formatCurrency } from "@/components/ui";
 import { Badge, EmptyState, ErrorState, LoadingSpinner } from "@/components/states";
+import { PlusIcon, SalesIcon, UploadIcon } from "@/components/icons";
 import { apiErrorMessage } from "@/api/client";
 
 export default function SalesList() {
@@ -30,19 +31,20 @@ export default function SalesList() {
   });
 
   return (
-    <div className="space-y-4">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <h1 className="text-2xl font-bold text-slate-800">Sales</h1>
-        <div className="flex gap-2">
-          <Link to="/sales/import">
-            <Button variant="secondary">Import</Button>
-          </Link>
-          <Link to="/sales/batches">
-            <Button variant="secondary">Import history</Button>
-          </Link>
-          <Button onClick={() => setRecording(true)}>+ Record sale</Button>
-        </div>
-      </div>
+    <div className="space-y-6">
+      <PageHeader title="Sales" subtitle="Recorded orders across every channel">
+        <Link to="/sales/import">
+          <Button variant="secondary">
+            <UploadIcon className="text-base" /> Import
+          </Button>
+        </Link>
+        <Link to="/sales/batches">
+          <Button variant="secondary">Import history</Button>
+        </Link>
+        <Button onClick={() => setRecording(true)}>
+          <PlusIcon className="text-base" /> Record sale
+        </Button>
+      </PageHeader>
 
       <Card>
         <div className="mb-4 w-56">
@@ -61,48 +63,53 @@ export default function SalesList() {
         ) : sales.isError ? (
           <ErrorState message={apiErrorMessage(sales.error)} />
         ) : sales.data && sales.data.content.length === 0 ? (
-          <EmptyState title="No sales recorded" hint="Record a manual sale or import a spreadsheet." />
+          <EmptyState icon={<SalesIcon />} title="No sales recorded" hint="Record a manual sale or import a spreadsheet." />
         ) : (
           <>
             <div className="overflow-x-auto">
-              <table className="w-full text-sm">
+              <table className="data-table">
                 <thead>
-                  <tr className="border-b border-slate-100 text-left text-slate-500">
-                    <th className="py-2">Date</th>
-                    <th className="py-2">Product / SKU</th>
-                    <th className="py-2">Channel</th>
-                    <th className="py-2 text-right">Qty</th>
-                    <th className="py-2 text-right">Total</th>
-                    <th className="py-2">Status</th>
-                    <th className="py-2 text-right">Actions</th>
+                  <tr>
+                    <th>Date</th>
+                    <th>Product / SKU</th>
+                    <th>Channel</th>
+                    <th className="text-right">Qty</th>
+                    <th className="text-right">Total</th>
+                    <th>Status</th>
+                    <th className="text-right">Actions</th>
                   </tr>
                 </thead>
                 <tbody>
                   {sales.data?.content.map((s) => (
-                    <tr key={s.id} className="border-b border-slate-50 hover:bg-slate-50">
-                      <td className="py-2 text-slate-500">{new Date(s.saleDate).toLocaleDateString()}</td>
-                      <td className="py-2">
-                        <span className="font-medium text-slate-700">{s.productName}</span>
-                        <span className="ml-1 text-slate-400">({s.sku})</span>
+                    <tr key={s.id}>
+                      <td className="whitespace-nowrap tabular-nums">{new Date(s.saleDate).toLocaleDateString()}</td>
+                      <td>
+                        <span className="font-medium text-slate-800">{s.productName}</span>
+                        <span className="ml-1 font-mono text-xs text-slate-400">({s.sku})</span>
                       </td>
-                      <td className="py-2 text-slate-500">{s.channelName}</td>
-                      <td className="py-2 text-right">{s.quantity}</td>
-                      <td className="py-2 text-right">{formatCurrency(s.totalAmount)}</td>
-                      <td className="py-2">
+                      <td>{s.channelName}</td>
+                      <td className="text-right tabular-nums">{s.quantity}</td>
+                      <td className="text-right font-medium tabular-nums text-slate-800">{formatCurrency(s.totalAmount)}</td>
+                      <td>
                         <Badge color={s.status === "COMPLETED" ? "green" : "amber"}>{s.status}</Badge>
                       </td>
-                      <td className="py-2 text-right">
-                        {s.status === "COMPLETED" && (
-                          <button onClick={() => returnMut.mutate(s.id)} className="mr-3 text-amber-600 hover:underline">
-                            Return
+                      <td className="text-right">
+                        <div className="flex items-center justify-end gap-1">
+                          {s.status === "COMPLETED" && (
+                            <button
+                              onClick={() => returnMut.mutate(s.id)}
+                              className="rounded-md px-2.5 py-1 text-sm font-medium text-amber-600 transition hover:bg-amber-50"
+                            >
+                              Return
+                            </button>
+                          )}
+                          <button
+                            onClick={() => confirm("Delete this sale?") && deleteMut.mutate(s.id)}
+                            className="rounded-md px-2.5 py-1 text-sm font-medium text-red-600 transition hover:bg-red-50"
+                          >
+                            Delete
                           </button>
-                        )}
-                        <button
-                          onClick={() => confirm("Delete this sale?") && deleteMut.mutate(s.id)}
-                          className="text-red-600 hover:underline"
-                        >
-                          Delete
-                        </button>
+                        </div>
                       </td>
                     </tr>
                   ))}
@@ -110,17 +117,14 @@ export default function SalesList() {
               </table>
             </div>
             {sales.data && sales.data.totalPages > 1 && (
-              <div className="mt-4 flex items-center justify-between text-sm">
-                <span className="text-slate-500">Page {sales.data.page + 1} of {sales.data.totalPages}</span>
-                <div className="flex gap-2">
-                  <Button variant="secondary" disabled={sales.data.first} onClick={() => setPage((p) => p - 1)}>
-                    Previous
-                  </Button>
-                  <Button variant="secondary" disabled={sales.data.last} onClick={() => setPage((p) => p + 1)}>
-                    Next
-                  </Button>
-                </div>
-              </div>
+              <Pagination
+                page={sales.data.page}
+                totalPages={sales.data.totalPages}
+                first={sales.data.first}
+                last={sales.data.last}
+                onPrev={() => setPage((p) => p - 1)}
+                onNext={() => setPage((p) => p + 1)}
+              />
             )}
           </>
         )}
@@ -153,7 +157,7 @@ function RecordSaleModal({ onClose, onDone }: { onClose: () => void; onDone: () 
     <Modal open title="Record a sale" onClose={onClose}>
       <div className="space-y-4">
         {create.isError && <ErrorState message={apiErrorMessage(create.error)} />}
-        {warning && <p className="rounded-md bg-amber-50 px-3 py-2 text-sm text-amber-700">{warning}</p>}
+        {warning && <p className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-700">{warning}</p>}
         <Select label="Channel" value={form.channelId} onChange={(e) => setForm({ ...form, channelId: e.target.value })}>
           <option value="">Select channel...</option>
           {channels.data?.map((c) => (
