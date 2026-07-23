@@ -3,8 +3,9 @@ import { Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { salesApi } from "@/api/sales";
 import { channelsApi } from "@/api/channels";
-import { Button, Card, Select } from "@/components/ui";
+import { Button, Card, PageHeader, Select } from "@/components/ui";
 import { Badge, ErrorState } from "@/components/states";
+import { ArrowLeftIcon, DownloadIcon, UploadIcon } from "@/components/icons";
 import { apiErrorMessage, downloadAuthed } from "@/api/client";
 import { ImportBatch } from "@/types/api";
 
@@ -33,24 +34,31 @@ export default function SalesImport() {
   }
 
   return (
-    <div className="mx-auto max-w-2xl space-y-4">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-slate-800">Import sales</h1>
-        <Link to="/sales" className="text-sm text-brand-600 hover:underline">
-          ← Back to sales
+    <div className="mx-auto max-w-2xl space-y-6">
+      <PageHeader title="Import sales">
+        <Link
+          to="/sales"
+          className="inline-flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-medium text-slate-600 transition hover:bg-slate-100"
+        >
+          <ArrowLeftIcon className="text-base" /> Back to sales
         </Link>
-      </div>
+      </PageHeader>
 
-      <Card className="space-y-4">
-        <p className="text-sm text-slate-600">
-          Upload a <b>.csv</b> or <b>.xlsx</b> with columns:{" "}
-          <code className="rounded bg-slate-100 px-1 text-xs">
+      <Card className="space-y-5">
+        <div className="space-y-2">
+          <p className="text-sm text-slate-600">
+            Upload a <b>.csv</b> or <b>.xlsx</b> with the following columns:
+          </p>
+          <code className="block overflow-x-auto rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 font-mono text-xs text-slate-600">
             sku, channel, quantity, unitPrice, saleDate, marketplaceOrderId
           </code>
-        </p>
-        <a href={TEMPLATE_URL} className="inline-block text-sm text-brand-600 hover:underline">
-          ⬇ Download sample template
-        </a>
+          <a
+            href={TEMPLATE_URL}
+            className="inline-flex items-center gap-1.5 text-sm font-medium text-brand-600 hover:text-brand-700"
+          >
+            <DownloadIcon className="text-base" /> Download sample template
+          </a>
+        </div>
 
         <Select
           label="Force all rows to a channel (optional — otherwise the 'channel' column is used)"
@@ -63,23 +71,30 @@ export default function SalesImport() {
           ))}
         </Select>
 
-        <input
-          type="file"
-          accept=".csv,.xlsx"
-          onChange={(e) => setFile(e.target.files?.[0] ?? null)}
-          className="block w-full text-sm text-slate-600 file:mr-3 file:rounded-md file:border-0 file:bg-brand-600 file:px-4 file:py-2 file:text-white"
-        />
+        <label className="flex cursor-pointer flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed border-slate-300 bg-slate-50/50 px-6 py-8 text-center transition hover:border-brand-400 hover:bg-brand-50/40">
+          <UploadIcon className="text-2xl text-slate-400" />
+          <span className="text-sm font-medium text-slate-700">
+            {file ? file.name : "Choose a file to upload"}
+          </span>
+          <span className="text-xs text-slate-400">CSV or Excel</span>
+          <input
+            type="file"
+            accept=".csv,.xlsx"
+            onChange={(e) => setFile(e.target.files?.[0] ?? null)}
+            className="hidden"
+          />
+        </label>
 
         {error && <ErrorState message={error} />}
         <Button onClick={upload} disabled={!file || loading}>
-          {loading ? "Uploading..." : "Upload & import"}
+          <UploadIcon className="text-base" /> {loading ? "Uploading..." : "Upload & import"}
         </Button>
       </Card>
 
       {result && (
-        <Card className="space-y-2">
-          <h2 className="font-semibold text-slate-700">Import summary</h2>
-          <div className="flex flex-wrap gap-3 text-sm">
+        <Card className="space-y-3">
+          <h2 className="text-sm font-semibold text-slate-800">Import summary</h2>
+          <div className="flex flex-wrap gap-2">
             <Badge>Total: {result.rowsTotal}</Badge>
             <Badge color="green">Success: {result.rowsSuccess}</Badge>
             <Badge color={result.rowsFailed > 0 ? "red" : "slate"}>Failed: {result.rowsFailed}</Badge>
@@ -88,9 +103,9 @@ export default function SalesImport() {
           {result.hasErrorReport && (
             <button
               onClick={() => downloadAuthed(`/import-batches/${result.id}/error-report`, `import-errors-${result.id}.csv`)}
-              className="text-left text-sm text-brand-600 hover:underline"
+              className="inline-flex items-center gap-1.5 text-sm font-medium text-brand-600 hover:text-brand-700"
             >
-              ⬇ Download error report for failed rows
+              <DownloadIcon className="text-base" /> Download error report for failed rows
             </button>
           )}
         </Card>

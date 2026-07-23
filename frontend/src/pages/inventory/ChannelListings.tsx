@@ -3,8 +3,9 @@ import { Link, useParams } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { inventoryApi } from "@/api/inventory";
 import { channelsApi } from "@/api/channels";
-import { Button, Card, Input, Modal, Select, formatNumber } from "@/components/ui";
+import { Button, Card, Input, Modal, PageHeader, Select, formatNumber } from "@/components/ui";
 import { Badge, EmptyState, ErrorState, LoadingSpinner } from "@/components/states";
+import { ArrowLeftIcon, InventoryIcon, PlusIcon } from "@/components/icons";
 import { apiErrorMessage } from "@/api/client";
 
 export default function ChannelListings() {
@@ -31,17 +32,19 @@ export default function ChannelListings() {
   });
 
   return (
-    <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <div>
-          <Link to="/channels" className="text-sm text-brand-600 hover:underline">
-            ← Channels
-          </Link>
-          <h1 className="text-2xl font-bold text-slate-800">
-            Allocations — {channel?.name ?? "Channel"}
-          </h1>
-        </div>
-        <Button onClick={() => setShowAdd(true)}>+ Allocate SKU</Button>
+    <div className="space-y-6">
+      <div className="space-y-3">
+        <Link
+          to="/channels"
+          className="inline-flex items-center gap-1.5 text-sm font-medium text-slate-500 transition hover:text-slate-700"
+        >
+          <ArrowLeftIcon className="text-base" /> Channels
+        </Link>
+        <PageHeader title={`Allocations — ${channel?.name ?? "Channel"}`} subtitle="Stock committed to this channel from central inventory">
+          <Button onClick={() => setShowAdd(true)}>
+            <PlusIcon className="text-base" /> Allocate SKU
+          </Button>
+        </PageHeader>
       </div>
 
       <Card>
@@ -50,27 +53,27 @@ export default function ChannelListings() {
         ) : listings.isError ? (
           <ErrorState message={apiErrorMessage(listings.error)} />
         ) : listings.data && listings.data.length === 0 ? (
-          <EmptyState title="No allocations yet" hint="Allocate stock from your central inventory to this channel." />
+          <EmptyState icon={<InventoryIcon />} title="No allocations yet" hint="Allocate stock from your central inventory to this channel." />
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full text-sm">
+            <table className="data-table">
               <thead>
-                <tr className="border-b border-slate-100 text-left text-slate-500">
-                  <th className="py-2">Product</th>
-                  <th className="py-2">SKU</th>
-                  <th className="py-2 text-right">Allocated</th>
-                  <th className="py-2 text-right">Channel price</th>
-                  <th className="py-2">Status</th>
+                <tr>
+                  <th>Product</th>
+                  <th>SKU</th>
+                  <th className="text-right">Allocated</th>
+                  <th className="text-right">Channel price</th>
+                  <th>Status</th>
                 </tr>
               </thead>
               <tbody>
                 {listings.data?.map((l) => (
-                  <tr key={l.id} className="border-b border-slate-50">
-                    <td className="py-2 font-medium text-slate-700">{l.productName}</td>
-                    <td className="py-2 text-slate-500">{l.sku}</td>
-                    <td className="py-2 text-right">{formatNumber(l.allocatedQuantity)}</td>
-                    <td className="py-2 text-right">{l.channelPrice ?? "—"}</td>
-                    <td className="py-2">
+                  <tr key={l.id}>
+                    <td className="font-medium text-slate-800">{l.productName}</td>
+                    <td className="font-mono text-xs text-slate-500">{l.sku}</td>
+                    <td className="text-right tabular-nums">{formatNumber(l.allocatedQuantity)}</td>
+                    <td className="text-right tabular-nums">{l.channelPrice ?? "—"}</td>
+                    <td>
                       <Badge color={l.status === "ACTIVE" ? "green" : "slate"}>{l.status}</Badge>
                     </td>
                   </tr>

@@ -1,21 +1,24 @@
 import { Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { salesApi } from "@/api/sales";
-import { Card } from "@/components/ui";
+import { Card, PageHeader } from "@/components/ui";
 import { Badge, EmptyState, ErrorState, LoadingSpinner } from "@/components/states";
+import { ArrowLeftIcon, DownloadIcon, InboxIcon } from "@/components/icons";
 import { apiErrorMessage, downloadAuthed } from "@/api/client";
 
 export default function ImportBatches() {
   const batches = useQuery({ queryKey: ["batches"], queryFn: () => salesApi.batches() });
 
   return (
-    <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-slate-800">Import history</h1>
-        <Link to="/sales" className="text-sm text-brand-600 hover:underline">
-          ← Back to sales
+    <div className="space-y-6">
+      <PageHeader title="Import history">
+        <Link
+          to="/sales"
+          className="inline-flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-medium text-slate-600 transition hover:bg-slate-100"
+        >
+          <ArrowLeftIcon className="text-base" /> Back to sales
         </Link>
-      </div>
+      </PageHeader>
 
       <Card>
         {batches.isLoading ? (
@@ -23,43 +26,43 @@ export default function ImportBatches() {
         ) : batches.isError ? (
           <ErrorState message={apiErrorMessage(batches.error)} />
         ) : batches.data && batches.data.content.length === 0 ? (
-          <EmptyState title="No imports yet" />
+          <EmptyState icon={<InboxIcon />} title="No imports yet" />
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full text-sm">
+            <table className="data-table">
               <thead>
-                <tr className="border-b border-slate-100 text-left text-slate-500">
-                  <th className="py-2">Date</th>
-                  <th className="py-2">File</th>
-                  <th className="py-2">Kind</th>
-                  <th className="py-2 text-right">Total</th>
-                  <th className="py-2 text-right">Success</th>
-                  <th className="py-2 text-right">Failed</th>
-                  <th className="py-2">Status</th>
-                  <th className="py-2 text-right">Report</th>
+                <tr>
+                  <th>Date</th>
+                  <th>File</th>
+                  <th>Kind</th>
+                  <th className="text-right">Total</th>
+                  <th className="text-right">Success</th>
+                  <th className="text-right">Failed</th>
+                  <th>Status</th>
+                  <th className="text-right">Report</th>
                 </tr>
               </thead>
               <tbody>
                 {batches.data?.content.map((b) => (
-                  <tr key={b.id} className="border-b border-slate-50">
-                    <td className="py-2 text-slate-500">{new Date(b.createdAt).toLocaleString()}</td>
-                    <td className="py-2 font-medium text-slate-700">{b.fileName}</td>
-                    <td className="py-2 text-slate-500">{b.kind}</td>
-                    <td className="py-2 text-right">{b.rowsTotal}</td>
-                    <td className="py-2 text-right text-emerald-600">{b.rowsSuccess}</td>
-                    <td className="py-2 text-right text-red-600">{b.rowsFailed}</td>
-                    <td className="py-2">
+                  <tr key={b.id}>
+                    <td className="whitespace-nowrap tabular-nums">{new Date(b.createdAt).toLocaleString()}</td>
+                    <td className="font-medium text-slate-800">{b.fileName}</td>
+                    <td>{b.kind}</td>
+                    <td className="text-right tabular-nums">{b.rowsTotal}</td>
+                    <td className="text-right font-medium tabular-nums text-emerald-600">{b.rowsSuccess}</td>
+                    <td className="text-right font-medium tabular-nums text-red-600">{b.rowsFailed}</td>
+                    <td>
                       <Badge color={b.status === "COMPLETED" ? "green" : b.status === "FAILED" ? "red" : "amber"}>
                         {b.status}
                       </Badge>
                     </td>
-                    <td className="py-2 text-right">
+                    <td className="text-right">
                       {b.hasErrorReport ? (
                         <button
                           onClick={() => downloadAuthed(`/import-batches/${b.id}/error-report`, `import-errors-${b.id}.csv`)}
-                          className="text-brand-600 hover:underline"
+                          className="inline-flex items-center gap-1.5 rounded-md px-2.5 py-1 text-sm font-medium text-brand-600 transition hover:bg-brand-50"
                         >
-                          Download
+                          <DownloadIcon className="text-base" /> Download
                         </button>
                       ) : (
                         "—"

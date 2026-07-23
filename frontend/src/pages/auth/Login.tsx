@@ -62,7 +62,7 @@ export default function Login() {
           Create one
         </Link>
       </p>
-      <p className="mt-4 rounded-md bg-slate-50 p-3 text-center text-xs text-slate-500">
+      <p className="mt-4 rounded-lg border border-slate-200 bg-slate-50 p-3 text-center text-xs text-slate-500">
         Demo login is pre-filled — just click Sign in.
       </p>
     </AuthShell>

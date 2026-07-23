@@ -1,8 +1,9 @@
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { usersApi, InviteUserInput } from "@/api/users";
-import { Button, Card, Input, Modal, Select } from "@/components/ui";
+import { Button, Card, Input, Modal, PageHeader, Select } from "@/components/ui";
 import { Badge, EmptyState, ErrorState, LoadingSpinner } from "@/components/states";
+import { PlusIcon, TeamIcon } from "@/components/icons";
 import { apiErrorMessage } from "@/api/client";
 import { useAuth } from "@/context/AuthContext";
 
@@ -31,11 +32,12 @@ export default function TeamList() {
   });
 
   return (
-    <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-slate-800">Team</h1>
-        <Button onClick={() => setInviting(true)}>+ Invite user</Button>
-      </div>
+    <div className="space-y-6">
+      <PageHeader title="Team" subtitle="People with access to this workspace">
+        <Button onClick={() => setInviting(true)}>
+          <PlusIcon className="text-base" /> Invite user
+        </Button>
+      </PageHeader>
 
       <Card>
         {team.isLoading ? (
@@ -43,17 +45,17 @@ export default function TeamList() {
         ) : team.isError ? (
           <ErrorState message={apiErrorMessage(team.error)} />
         ) : team.data && team.data.content.length === 0 ? (
-          <EmptyState title="No team members" />
+          <EmptyState icon={<TeamIcon />} title="No team members" />
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full text-sm">
+            <table className="data-table">
               <thead>
-                <tr className="border-b border-slate-100 text-left text-slate-500">
-                  <th className="py-2">Name</th>
-                  <th className="py-2">Email</th>
-                  <th className="py-2">Role</th>
-                  <th className="py-2">Status</th>
-                  <th className="py-2 text-right">Actions</th>
+                <tr>
+                  <th>Name</th>
+                  <th>Email</th>
+                  <th>Role</th>
+                  <th>Status</th>
+                  <th className="text-right">Actions</th>
                 </tr>
               </thead>
               <tbody>
@@ -61,36 +63,38 @@ export default function TeamList() {
                   const isSelf = u.id === user?.id;
                   const isOwner = u.role === "OWNER";
                   return (
-                    <tr key={u.id} className="border-b border-slate-50">
-                      <td className="py-2 font-medium text-slate-700">{u.fullName}{isSelf && " (you)"}</td>
-                      <td className="py-2 text-slate-500">{u.email}</td>
-                      <td className="py-2">
+                    <tr key={u.id}>
+                      <td className="font-medium text-slate-800">{u.fullName}{isSelf && <span className="ml-1 text-xs font-normal text-slate-400">(you)</span>}</td>
+                      <td>{u.email}</td>
+                      <td>
                         <Badge color={isOwner ? "brand" : "slate"}>{u.role}</Badge>
                       </td>
-                      <td className="py-2">
+                      <td>
                         <Badge color={u.status === "ACTIVE" ? "green" : u.status === "DISABLED" ? "red" : "amber"}>
                           {u.status}
                         </Badge>
                       </td>
-                      <td className="py-2 text-right">
-                        {!isOwner && !isSelf && (
-                          <>
-                            {u.status === "ACTIVE" ? (
-                              <button onClick={() => update.mutate({ id: u.id, status: "DISABLED" })} className="mr-3 text-amber-600 hover:underline">
-                                Disable
-                              </button>
-                            ) : (
-                              <button onClick={() => update.mutate({ id: u.id, status: "ACTIVE" })} className="mr-3 text-emerald-600 hover:underline">
-                                Enable
-                              </button>
-                            )}
-                            {user?.role === "OWNER" && (
-                              <button onClick={() => confirm("Remove this user?") && remove.mutate(u.id)} className="text-red-600 hover:underline">
-                                Remove
-                              </button>
-                            )}
-                          </>
-                        )}
+                      <td className="text-right">
+                        <div className="flex items-center justify-end gap-1">
+                          {!isOwner && !isSelf && (
+                            <>
+                              {u.status === "ACTIVE" ? (
+                                <button onClick={() => update.mutate({ id: u.id, status: "DISABLED" })} className="rounded-md px-2.5 py-1 text-sm font-medium text-amber-600 transition hover:bg-amber-50">
+                                  Disable
+                                </button>
+                              ) : (
+                                <button onClick={() => update.mutate({ id: u.id, status: "ACTIVE" })} className="rounded-md px-2.5 py-1 text-sm font-medium text-emerald-600 transition hover:bg-emerald-50">
+                                  Enable
+                                </button>
+                              )}
+                              {user?.role === "OWNER" && (
+                                <button onClick={() => confirm("Remove this user?") && remove.mutate(u.id)} className="rounded-md px-2.5 py-1 text-sm font-medium text-red-600 transition hover:bg-red-50">
+                                  Remove
+                                </button>
+                              )}
+                            </>
+                          )}
+                        </div>
                       </td>
                     </tr>
                   );
@@ -137,7 +141,8 @@ function InviteModal({
           <option value="ADMIN">Admin</option>
         </Select>
         <Input
-          label="Temporary password (optional — auto-generated & emailed if blank)"
+          label="Temporary password"
+          hint="Optional — auto-generated and emailed if left blank."
           value={form.password}
           onChange={(e) => setForm({ ...form, password: e.target.value })}
         />
