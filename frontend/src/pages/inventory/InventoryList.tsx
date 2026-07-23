@@ -1,9 +1,9 @@
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { inventoryApi } from "@/api/inventory";
-import { Button, Card, Input, Modal, PageHeader, Pagination, formatNumber } from "@/components/ui";
+import { Button, Card, Input, Modal, PageHeader, Pagination, Tabs, formatNumber } from "@/components/ui";
 import { Badge, EmptyState, ErrorState, LoadingSpinner } from "@/components/states";
-import { InventoryIcon } from "@/components/icons";
+import { AlertIcon, InventoryIcon, LayersIcon } from "@/components/icons";
 import { apiErrorMessage } from "@/api/client";
 import { InventoryItem } from "@/types/api";
 import { useAuth } from "@/context/AuthContext";
@@ -43,23 +43,19 @@ export default function InventoryList() {
 
   return (
     <div className="space-y-6">
-      <PageHeader title="Inventory" subtitle="Central stock across all variants">
-        <label
-          className={`flex cursor-pointer items-center gap-2 rounded-lg border px-3 py-2 text-sm transition ${
-            showLowOnly
-              ? "border-brand-200 bg-brand-50 text-brand-700"
-              : "border-slate-300 bg-white text-slate-600 hover:bg-slate-50"
-          }`}
-        >
-          <input
-            type="checkbox"
-            className="h-4 w-4 rounded border-slate-300 text-brand-600 focus:ring-brand-500/30"
-            checked={showLowOnly}
-            onChange={(e) => setShowLowOnly(e.target.checked)}
-          />
-          Show low-stock only
-        </label>
-      </PageHeader>
+      <PageHeader title="Inventory" subtitle="Central stock across all variants" />
+
+      <Tabs
+        tabs={[
+          { key: "all", label: "All stock", icon: LayersIcon },
+          { key: "low", label: "Low stock", icon: AlertIcon, count: low.data?.length },
+        ]}
+        value={showLowOnly ? "low" : "all"}
+        onChange={(k) => {
+          setShowLowOnly(k === "low");
+          setPage(0);
+        }}
+      />
 
       <Card>
         {loading ? (

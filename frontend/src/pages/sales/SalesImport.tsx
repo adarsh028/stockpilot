@@ -1,11 +1,10 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { salesApi } from "@/api/sales";
 import { channelsApi } from "@/api/channels";
-import { Button, Card, PageHeader, Select } from "@/components/ui";
+import { Button, Card, Select } from "@/components/ui";
 import { Badge, ErrorState } from "@/components/states";
-import { ArrowLeftIcon, DownloadIcon, UploadIcon } from "@/components/icons";
+import { DownloadIcon, UploadIcon } from "@/components/icons";
 import { apiErrorMessage, downloadAuthed } from "@/api/client";
 import { ImportBatch } from "@/types/api";
 
@@ -34,16 +33,7 @@ export default function SalesImport() {
   }
 
   return (
-    <div className="mx-auto max-w-2xl space-y-6">
-      <PageHeader title="Import sales">
-        <Link
-          to="/sales"
-          className="inline-flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-medium text-slate-600 transition hover:bg-slate-100"
-        >
-          <ArrowLeftIcon className="text-base" /> Back to sales
-        </Link>
-      </PageHeader>
-
+    <div className="max-w-2xl space-y-6">
       <Card className="space-y-5">
         <div className="space-y-2">
           <p className="text-sm text-slate-600">

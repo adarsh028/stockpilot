@@ -1,10 +1,9 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { categoriesApi, CategoryInput } from "@/api/categories";
-import { Button, Card, Input, Modal, PageHeader } from "@/components/ui";
+import { Button, Card, Input, Modal } from "@/components/ui";
 import { Badge, EmptyState, ErrorState, LoadingSpinner } from "@/components/states";
-import { ArrowLeftIcon, PlusIcon, ProductsIcon } from "@/components/icons";
+import { PlusIcon, TagIcon } from "@/components/icons";
 import { apiErrorMessage } from "@/api/client";
 import { Category } from "@/types/api";
 import { useAuth } from "@/context/AuthContext";
@@ -34,20 +33,15 @@ export default function Categories() {
   });
 
   return (
-    <div className="space-y-6">
-      <PageHeader title="Categories" subtitle="Manage the categories products can be assigned to">
-        <Link
-          to="/settings"
-          className="inline-flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-medium text-slate-600 transition hover:bg-slate-100"
-        >
-          <ArrowLeftIcon className="text-base" /> Back to settings
-        </Link>
+    <div className="space-y-4">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <p className="text-sm text-slate-500">Categories products can be assigned to.</p>
         {canEdit && (
           <Button onClick={() => setCreating(true)}>
             <PlusIcon className="text-base" /> New category
           </Button>
         )}
-      </PageHeader>
+      </div>
 
       <Card>
         {query.isLoading ? (
@@ -56,7 +50,7 @@ export default function Categories() {
           <ErrorState message={apiErrorMessage(query.error)} />
         ) : query.data && query.data.length === 0 ? (
           <EmptyState
-            icon={<ProductsIcon />}
+            icon={<TagIcon />}
             title="No categories yet"
             hint="Create one so it's available when adding a product."
           />

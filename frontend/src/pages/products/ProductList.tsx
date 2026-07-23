@@ -1,10 +1,10 @@
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { productsApi } from "@/api/products";
-import { Button, Card, Input, PageHeader, Pagination } from "@/components/ui";
+import { Card, Input, Pagination } from "@/components/ui";
 import { Badge, EmptyState, ErrorState, LoadingSpinner } from "@/components/states";
-import { EditIcon, PlusIcon, ProductsIcon, SearchIcon, TrashIcon, UploadIcon } from "@/components/icons";
+import { EditIcon, ProductsIcon, SearchIcon, TrashIcon } from "@/components/icons";
 import { apiErrorMessage } from "@/api/client";
 import { useAuth } from "@/context/AuthContext";
 import { Product } from "@/types/api";
@@ -57,52 +57,34 @@ export default function ProductList() {
   });
 
   return (
-    <div className="space-y-6">
-      <PageHeader title="Products" subtitle="Your product catalog and variants">
-        {canEdit && (
-          <>
-            <Link to="/products/import">
-              <Button variant="secondary">
-                <UploadIcon className="text-base" /> Import CSV/Excel
-              </Button>
-            </Link>
-            <Link to="/products/new">
-              <Button>
-                <PlusIcon className="text-base" /> New product
-              </Button>
-            </Link>
-          </>
-        )}
-      </PageHeader>
-
-      <Card>
-        <div className="mb-4 max-w-sm">
-          <div className="relative">
-            <SearchIcon className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-base text-slate-400" />
-            <Input
-              placeholder="Search by name or brand..."
-              className="pl-9"
-              value={search}
-              onChange={(e) => {
-                setSearch(e.target.value);
-                setPage(0);
-              }}
-            />
-          </div>
-        </div>
-
-        {query.isLoading ? (
-          <LoadingSpinner />
-        ) : query.isError ? (
-          <ErrorState message={apiErrorMessage(query.error)} />
-        ) : query.data && query.data.content.length === 0 ? (
-          <EmptyState
-            icon={<ProductsIcon />}
-            title="No products yet"
-            hint="Create one or import a spreadsheet to get started."
+    <Card>
+      <div className="mb-4 max-w-sm">
+        <div className="relative">
+          <SearchIcon className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-base text-slate-400" />
+          <Input
+            placeholder="Search by name or brand..."
+            className="pl-9"
+            value={search}
+            onChange={(e) => {
+              setSearch(e.target.value);
+              setPage(0);
+            }}
           />
-        ) : (
-          <>
+        </div>
+      </div>
+
+      {query.isLoading ? (
+        <LoadingSpinner />
+      ) : query.isError ? (
+        <ErrorState message={apiErrorMessage(query.error)} />
+      ) : query.data && query.data.content.length === 0 ? (
+        <EmptyState
+          icon={<ProductsIcon />}
+          title="No products yet"
+          hint="Create one or import a spreadsheet to get started."
+        />
+      ) : (
+        <>
             <div className="overflow-x-auto">
               <table className="data-table">
                 <thead>
@@ -168,9 +150,8 @@ export default function ProductList() {
                 onNext={() => setPage((p) => p + 1)}
               />
             )}
-          </>
-        )}
-      </Card>
-    </div>
+        </>
+      )}
+    </Card>
   );
 }

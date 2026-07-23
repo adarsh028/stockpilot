@@ -1,4 +1,5 @@
-import { ButtonHTMLAttributes, InputHTMLAttributes, ReactNode, SelectHTMLAttributes } from "react";
+import { ButtonHTMLAttributes, ComponentType, InputHTMLAttributes, ReactNode, SelectHTMLAttributes, SVGProps } from "react";
+import { NavLink } from "react-router-dom";
 import { ChevronDownIcon, ChevronLeftIcon, ChevronRightIcon, CloseIcon } from "./icons";
 
 export function Button({
@@ -107,6 +108,138 @@ export function PageHeader({
         <div className="flex w-full flex-wrap items-center gap-2 sm:w-auto">{children}</div>
       )}
     </div>
+  );
+}
+
+type TabIcon = ComponentType<SVGProps<SVGSVGElement>>;
+
+// Shared underline-tab styling — the single source of truth for every tab in the app,
+// whether it navigates (RouteTabs) or flips in-page state (Tabs). Modelled on the
+// quiet, deep-linkable tab bars in Linear / Stripe / Vercel: a hairline baseline, an
+// accent underline on the active tab, and a soft hover lift on the rest.
+const TAB_BASE =
+  "group/tab inline-flex shrink-0 items-center gap-2 whitespace-nowrap border-b-2 px-1 pb-3 pt-1 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500/40 focus-visible:ring-offset-2 rounded-t-sm";
+
+function tabClassName(active: boolean): string {
+  return `${TAB_BASE} ${
+    active
+      ? "border-brand-600 text-brand-700"
+      : "border-transparent text-slate-500 hover:border-slate-300 hover:text-slate-800"
+  }`;
+}
+
+function TabIconEl({ icon: Icon, active }: { icon?: TabIcon; active: boolean }) {
+  if (!Icon) return null;
+  return (
+    <Icon
+      className={`text-base transition-colors ${
+        active ? "text-brand-600" : "text-slate-400 group-hover/tab:text-slate-500"
+      }`}
+    />
+  );
+}
+
+// Small pill that rides alongside a tab label to surface a count (e.g. failed rows).
+function TabCount({ children, active }: { children: ReactNode; active: boolean }) {
+  return (
+    <span
+      className={`ml-0.5 rounded-full px-1.5 py-0.5 text-[11px] font-semibold tabular-nums transition-colors ${
+        active ? "bg-brand-50 text-brand-700" : "bg-slate-100 text-slate-500"
+      }`}
+    >
+      {children}
+    </span>
+  );
+}
+
+/**
+ * Presentational tab strip — a horizontally scrollable row sitting on a hairline
+ * baseline. Used directly by RouteTabs/Tabs; exported so a page can compose its own.
+ */
+export function TabBar({ children, className = "" }: { children: ReactNode; className?: string }) {
+  return (
+    <div className={`border-b border-slate-200 ${className}`}>
+      <nav className="-mb-px flex gap-6 overflow-x-auto" role="tablist">
+        {children}
+      </nav>
+    </div>
+  );
+}
+
+export interface RouteTabItem {
+  to: string;
+  label: string;
+  icon?: TabIcon;
+  /** Match the path exactly (use for the index tab so it isn't active on children). */
+  end?: boolean;
+  count?: ReactNode;
+}
+
+/**
+ * URL-synced tabs. Each tab is a real route, so tabs are deep-linkable, survive
+ * reloads, and play nicely with the browser back button — the same pattern GitHub,
+ * Stripe and Linear use for their section tabs.
+ */
+export function RouteTabs({ items, className = "" }: { items: RouteTabItem[]; className?: string }) {
+  return (
+    <TabBar className={className}>
+      {items.map((t) => (
+        <NavLink key={t.to} to={t.to} end={t.end} role="tab" className={({ isActive }) => tabClassName(isActive)}>
+          {({ isActive }) => (
+            <>
+              <TabIconEl icon={t.icon} active={isActive} />
+              {t.label}
+              {t.count != null && <TabCount active={isActive}>{t.count}</TabCount>}
+            </>
+          )}
+        </NavLink>
+      ))}
+    </TabBar>
+  );
+}
+
+export interface TabItem<T extends string> {
+  key: T;
+  label: string;
+  icon?: TabIcon;
+  count?: ReactNode;
+}
+
+/**
+ * Controlled in-page tabs for switching content without changing the route — e.g.
+ * an "All / Low stock" filter. Shares its look exactly with RouteTabs.
+ */
+export function Tabs<T extends string>({
+  tabs,
+  value,
+  onChange,
+  className = "",
+}: {
+  tabs: TabItem<T>[];
+  value: T;
+  onChange: (key: T) => void;
+  className?: string;
+}) {
+  return (
+    <TabBar className={className}>
+      {tabs.map((t) => {
+        const active = t.key === value;
+        return (
+          <button
+            key={t.key}
+            type="button"
+            role="tab"
+            aria-selected={active}
+            onClick={() => onChange(t.key)}
+            className={tabClassName(active)}
+          >
+            <TabIconEl icon={t.icon} active={active} />
+            {t.label}
+            {t.count != null && <TabCount active={active}>{t.count}</TabCount>}
+          </button>
+        );
+      })}
+    </TabBar>
   );
 }
 

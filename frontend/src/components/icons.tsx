@@ -215,6 +215,49 @@ export const MenuIcon = (p: IconProps) => (
   </Base>
 );
 
+export const ClockIcon = (p: IconProps) => (
+  <Base {...p}>
+    <circle cx="12" cy="12" r="9" />
+    <path d="M12 7v5l3.5 2" />
+  </Base>
+);
+
+export const TagIcon = (p: IconProps) => (
+  <Base {...p}>
+    <path d="M3 7v5.6a2 2 0 0 0 .6 1.4l7 7a1.9 1.9 0 0 0 2.7 0l5.7-5.7a1.9 1.9 0 0 0 0-2.7l-7-7A2 2 0 0 0 12.6 3H7a4 4 0 0 0-4 4Z" />
+    <path d="M7.5 7.5h.01" />
+  </Base>
+);
+
+export const LayersIcon = (p: IconProps) => (
+  <Base {...p}>
+    <path d="m12 3 9 5-9 5-9-5 9-5Z" />
+    <path d="m3 13 9 5 9-5" />
+  </Base>
+);
+
+export const ListIcon = (p: IconProps) => (
+  <Base {...p}>
+    <path d="M8 6h13M8 12h13M8 18h13" />
+    <path d="M3.5 6h.01M3.5 12h.01M3.5 18h.01" />
+  </Base>
+);
+
+export const PlugIcon = (p: IconProps) => (
+  <Base {...p}>
+    <path d="M9 3v5M15 3v5" />
+    <path d="M6 8h12v3a6 6 0 0 1-12 0V8Z" />
+    <path d="M12 17v4" />
+  </Base>
+);
+
+export const BuildingIcon = (p: IconProps) => (
+  <Base {...p}>
+    <rect x="4" y="3" width="16" height="18" rx="2" />
+    <path d="M9 8h.01M15 8h.01M9 12h.01M15 12h.01M9 16h6" />
+  </Base>
+);
+
 /** Brand mark — a rounded gradient tile with a stylised stacked-boxes glyph. */
 export function Logo({ className = "" }: { className?: string }) {
   return (

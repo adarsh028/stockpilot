@@ -1,12 +1,11 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { salesApi, SaleInput } from "@/api/sales";
 import { channelsApi } from "@/api/channels";
 import { inventoryApi } from "@/api/inventory";
-import { Button, Card, Input, Modal, PageHeader, Pagination, Select, formatCurrency } from "@/components/ui";
+import { Button, Card, Input, Modal, Pagination, Select, formatCurrency } from "@/components/ui";
 import { Badge, EmptyState, ErrorState, LoadingSpinner } from "@/components/states";
-import { PlusIcon, SalesIcon, UploadIcon } from "@/components/icons";
+import { PlusIcon, SalesIcon } from "@/components/icons";
 import { apiErrorMessage } from "@/api/client";
 
 export default function SalesList() {
@@ -31,31 +30,22 @@ export default function SalesList() {
   });
 
   return (
-    <div className="space-y-6">
-      <PageHeader title="Sales" subtitle="Recorded orders across every channel">
-        <Link to="/sales/import">
-          <Button variant="secondary">
-            <UploadIcon className="text-base" /> Import
-          </Button>
-        </Link>
-        <Link to="/sales/batches">
-          <Button variant="secondary">Import history</Button>
-        </Link>
-        <Button onClick={() => setRecording(true)}>
-          <PlusIcon className="text-base" /> Record sale
-        </Button>
-      </PageHeader>
-
+    <>
       <Card>
-        <div className="mb-4 w-full sm:w-56">
-          <Select label="Filter by channel" value={channelId} onChange={(e) => { setChannelId(e.target.value); setPage(0); }}>
-            <option value="">All channels</option>
-            {channels.data?.map((c) => (
-              <option key={c.id} value={c.id}>
-                {c.name}
-              </option>
-            ))}
-          </Select>
+        <div className="mb-4 flex flex-wrap items-end justify-between gap-3">
+          <div className="w-full sm:w-56">
+            <Select label="Filter by channel" value={channelId} onChange={(e) => { setChannelId(e.target.value); setPage(0); }}>
+              <option value="">All channels</option>
+              {channels.data?.map((c) => (
+                <option key={c.id} value={c.id}>
+                  {c.name}
+                </option>
+              ))}
+            </Select>
+          </div>
+          <Button onClick={() => setRecording(true)}>
+            <PlusIcon className="text-base" /> Record sale
+          </Button>
         </div>
 
         {sales.isLoading ? (
@@ -131,7 +121,7 @@ export default function SalesList() {
       </Card>
 
       {recording && <RecordSaleModal onClose={() => setRecording(false)} onDone={() => { setRecording(false); qc.invalidateQueries({ queryKey: ["sales"] }); }} />}
-    </div>
+    </>
   );
 }
 

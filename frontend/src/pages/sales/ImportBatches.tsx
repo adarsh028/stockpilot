@@ -1,26 +1,15 @@
-import { Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { salesApi } from "@/api/sales";
-import { Card, PageHeader } from "@/components/ui";
+import { Card } from "@/components/ui";
 import { Badge, EmptyState, ErrorState, LoadingSpinner } from "@/components/states";
-import { ArrowLeftIcon, DownloadIcon, InboxIcon } from "@/components/icons";
+import { DownloadIcon, InboxIcon } from "@/components/icons";
 import { apiErrorMessage, downloadAuthed } from "@/api/client";
 
 export default function ImportBatches() {
   const batches = useQuery({ queryKey: ["batches"], queryFn: () => salesApi.batches() });
 
   return (
-    <div className="space-y-6">
-      <PageHeader title="Import history">
-        <Link
-          to="/sales"
-          className="inline-flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-medium text-slate-600 transition hover:bg-slate-100"
-        >
-          <ArrowLeftIcon className="text-base" /> Back to sales
-        </Link>
-      </PageHeader>
-
-      <Card>
+    <Card>
         {batches.isLoading ? (
           <LoadingSpinner />
         ) : batches.isError ? (
@@ -72,9 +61,8 @@ export default function ImportBatches() {
                 ))}
               </tbody>
             </table>
-          </div>
-        )}
-      </Card>
-    </div>
+        </div>
+      )}
+    </Card>
   );
 }

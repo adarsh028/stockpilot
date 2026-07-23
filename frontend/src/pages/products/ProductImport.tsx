@@ -1,9 +1,8 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
 import { productsApi } from "@/api/products";
-import { Button, Card, PageHeader } from "@/components/ui";
+import { Button, Card } from "@/components/ui";
 import { Badge, ErrorState } from "@/components/states";
-import { ArrowLeftIcon, DownloadIcon, UploadIcon } from "@/components/icons";
+import { DownloadIcon, UploadIcon } from "@/components/icons";
 import { apiErrorMessage, downloadAuthed } from "@/api/client";
 import { ImportBatch } from "@/types/api";
 
@@ -30,16 +29,7 @@ export default function ProductImport() {
   }
 
   return (
-    <div className="mx-auto max-w-2xl space-y-6">
-      <PageHeader title="Import products">
-        <Link
-          to="/products"
-          className="inline-flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-medium text-slate-600 transition hover:bg-slate-100"
-        >
-          <ArrowLeftIcon className="text-base" /> Back to products
-        </Link>
-      </PageHeader>
-
+    <div className="max-w-2xl space-y-6">
       <Card className="space-y-5">
         <div className="space-y-2">
           <p className="text-sm text-slate-600">
