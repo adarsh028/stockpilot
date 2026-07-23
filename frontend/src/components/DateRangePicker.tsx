@@ -23,8 +23,8 @@ export function DateRangePicker({
   onChange: (v: RangeValue) => void;
 }) {
   return (
-    <div className="flex flex-wrap items-end gap-3">
-      <div className="w-44">
+    <div className="flex w-full flex-wrap items-end gap-3 sm:w-auto">
+      <div className="w-full sm:w-44">
         <Select
           label="Period"
           value={value.preset}
@@ -39,7 +39,7 @@ export function DateRangePicker({
       </div>
       {value.preset === "CUSTOM" && (
         <>
-          <div className="w-40">
+          <div className="w-full sm:w-40">
             <Input
               type="date"
               label="From"
@@ -47,7 +47,7 @@ export function DateRangePicker({
               onChange={(e) => onChange({ ...value, from: e.target.value })}
             />
           </div>
-          <div className="w-40">
+          <div className="w-full sm:w-40">
             <Input
               type="date"
               label="To"

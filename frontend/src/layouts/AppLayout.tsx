@@ -1,4 +1,4 @@
-import { ComponentType, ReactNode, SVGProps, useState } from "react";
+import { ComponentType, SVGProps, useEffect, useState } from "react";
 import { NavLink, Outlet } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
 import { Badge } from "@/components/states";
@@ -8,7 +8,7 @@ import {
   InventoryIcon,
   Logo,
   LogOutIcon,
-  PanelLeftIcon,
+  MenuIcon,
   ProductsIcon,
   SalesIcon,
   SettingsIcon,
@@ -32,7 +32,11 @@ const NAV: NavItem[] = [
   { to: "/settings", label: "Settings", icon: SettingsIcon },
 ];
 
-const COLLAPSE_KEY = "sp.sidebar.collapsed";
+// Labels/wordmark: shown on the mobile drawer (full width) and on desktop only while
+// the rail is expanded. Kept in the DOM and faded so the icon never shifts position.
+function reveal(expanded: boolean): string {
+  return `whitespace-nowrap transition-opacity duration-200 ${expanded ? "lg:opacity-100" : "lg:opacity-0"}`;
+}
 
 function initials(name?: string): string {
   if (!name) return "?";
@@ -40,104 +44,117 @@ function initials(name?: string): string {
   return ((parts[0]?.[0] ?? "") + (parts.length > 1 ? parts[parts.length - 1][0] : "")).toUpperCase();
 }
 
-function Sidebar({ collapsed, onToggle }: { collapsed: boolean; onToggle: () => void }) {
+function Sidebar({
+  mobileOpen,
+  onNavigate,
+  onExpandedChange,
+}: {
+  mobileOpen: boolean;
+  onNavigate: () => void;
+  onExpandedChange: (expanded: boolean) => void;
+}) {
   const { user } = useAuth();
   const items = NAV.filter((n) => !n.roles || (user && n.roles.includes(user.role)));
 
+  // The collapsed desktop rail expands on hover OR keyboard focus; either one keeps
+  // it open, and it only collapses once both are gone. `onExpandedChange` lets the
+  // layout grow the reserved content gutter in lockstep so the rail never overlaps
+  // the page — it pushes content aside instead of floating over it.
+  const [hovered, setHovered] = useState(false);
+  const [focused, setFocused] = useState(false);
+  const expanded = hovered || focused;
+
+  useEffect(() => {
+    onExpandedChange(expanded);
+  }, [expanded, onExpandedChange]);
+
   return (
-    <aside
-      className={`flex h-full shrink-0 flex-col border-r border-slate-200 bg-white transition-[width] duration-200 ${
-        collapsed ? "w-[72px]" : "w-64"
-      }`}
-    >
+    <>
+      {/* Mobile backdrop */}
       <div
-        className={`flex h-16 items-center gap-2.5 border-b border-slate-100 px-4 ${
-          collapsed ? "justify-center" : ""
+        aria-hidden="true"
+        onClick={onNavigate}
+        className={`fixed inset-0 z-30 bg-slate-900/50 backdrop-blur-sm transition-opacity duration-200 lg:hidden ${
+          mobileOpen ? "opacity-100" : "pointer-events-none opacity-0"
         }`}
+      />
+
+      <aside
+        onMouseEnter={() => setHovered(true)}
+        onMouseLeave={() => setHovered(false)}
+        onFocus={() => setFocused(true)}
+        onBlur={() => setFocused(false)}
+        className={`fixed inset-y-0 left-0 z-40 flex w-64 flex-col overflow-hidden border-r border-slate-800 bg-slate-900 text-slate-300 shadow-xl transition-[transform,width] duration-200 ease-out ${
+          mobileOpen ? "translate-x-0" : "-translate-x-full"
+        } lg:translate-x-0 ${expanded ? "lg:w-64 lg:shadow-2xl" : "lg:w-[76px] lg:shadow-none"}`}
       >
-        <Logo className="h-9 w-9 shrink-0" />
-        {!collapsed && (
-          <div className="min-w-0 flex-1">
-            <p className="truncate text-[15px] font-bold leading-tight text-slate-900">StockPilot</p>
+        <div className="flex h-16 shrink-0 items-center gap-3 px-[18px]">
+          <Logo className="h-9 w-9 shrink-0" />
+          <div className={`min-w-0 ${reveal(expanded)}`}>
+            <p className="truncate text-[15px] font-bold leading-tight text-white">StockPilot</p>
             <p className="truncate text-[11px] text-slate-400">Inventory OS</p>
           </div>
-        )}
-        {!collapsed && (
-          <button
-            onClick={onToggle}
-            aria-label="Collapse sidebar"
-            className="rounded-md p-1.5 text-slate-400 transition hover:bg-slate-100 hover:text-slate-600"
-          >
-            <PanelLeftIcon className="text-lg" />
-          </button>
-        )}
-      </div>
+        </div>
 
-      <nav className={`flex-1 space-y-1 overflow-y-auto py-4 ${collapsed ? "px-3" : "px-3"}`}>
-        {!collapsed && (
-          <p className="mb-1 px-3 text-[11px] font-semibold uppercase tracking-wider text-slate-400">
-            Menu
-          </p>
-        )}
-        {items.map((n) => {
-          const Icon = n.icon;
-          return (
-            <NavLink
-              key={n.to}
-              to={n.to}
-              end={n.to === "/"}
-              title={collapsed ? n.label : undefined}
-              className={({ isActive }) =>
-                `group relative flex items-center rounded-lg text-sm font-medium transition ${
-                  collapsed ? "justify-center px-0 py-2.5" : "gap-3 px-3 py-2"
-                } ${
-                  isActive
-                    ? "bg-brand-50 text-brand-700"
-                    : "text-slate-600 hover:bg-slate-100 hover:text-slate-900"
-                }`
-              }
-            >
-              {({ isActive }) => (
-                <>
-                  {isActive && (
-                    <span className="absolute left-0 top-1/2 h-5 w-1 -translate-y-1/2 rounded-r-full bg-brand-600" />
-                  )}
-                  <Icon
-                    className={`text-xl transition-colors ${
-                      isActive ? "text-brand-600" : "text-slate-400 group-hover:text-slate-600"
-                    }`}
-                  />
-                  {!collapsed && <span className="truncate">{n.label}</span>}
-                </>
-              )}
-            </NavLink>
-          );
-        })}
-      </nav>
+        <nav className="flex-1 space-y-1 overflow-y-auto overflow-x-hidden px-3 py-3">
+          {items.map((n) => {
+            const Icon = n.icon;
+            return (
+              <NavLink
+                key={n.to}
+                to={n.to}
+                end={n.to === "/"}
+                onClick={onNavigate}
+                title={n.label}
+                className={({ isActive }) =>
+                  `group/item flex items-center gap-3 rounded-lg px-[11px] py-2.5 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500/60 ${
+                    isActive
+                      ? "bg-brand-600 text-white shadow-sm"
+                      : "text-slate-300 hover:bg-slate-800 hover:text-white"
+                  }`
+                }
+              >
+                {({ isActive }) => (
+                  <>
+                    <Icon
+                      className={`shrink-0 text-xl transition-colors ${
+                        isActive ? "text-white" : "text-slate-400 group-hover/item:text-white"
+                      }`}
+                    />
+                    <span className={`truncate ${reveal(expanded)}`}>{n.label}</span>
+                  </>
+                )}
+              </NavLink>
+            );
+          })}
+        </nav>
 
-      <div className="border-t border-slate-100 p-3">
-        {collapsed ? (
-          <button
-            onClick={onToggle}
-            aria-label="Expand sidebar"
-            className="flex w-full items-center justify-center rounded-lg py-2 text-slate-400 transition hover:bg-slate-100 hover:text-slate-600"
-          >
-            <PanelLeftIcon className="text-lg" />
-          </button>
-        ) : (
-          <p className="px-2 text-[11px] text-slate-400">StockPilot v0.1</p>
-        )}
-      </div>
-    </aside>
+        <div className="shrink-0 px-3 pb-4 pt-2">
+          <p className={`px-2 text-[11px] text-slate-500 ${reveal(expanded)}`}>StockPilot v0.1</p>
+        </div>
+      </aside>
+    </>
   );
 }
 
-function Header({ children }: { children?: ReactNode }) {
+function Header({ onMenu }: { onMenu: () => void }) {
   const { user, logout } = useAuth();
   return (
-    <header className="flex h-16 shrink-0 items-center justify-between border-b border-slate-200 bg-white/80 px-6 backdrop-blur">
-      <div className="min-w-0">{children}</div>
-      <div className="flex items-center gap-3">
+    <header className="flex h-16 shrink-0 items-center justify-between gap-3 border-b border-slate-200 bg-white/80 px-4 backdrop-blur sm:px-6">
+      <div className="flex items-center gap-2">
+        <button
+          onClick={onMenu}
+          aria-label="Open menu"
+          className="rounded-lg p-2 text-slate-500 transition hover:bg-slate-100 hover:text-slate-700 lg:hidden"
+        >
+          <MenuIcon className="text-xl" />
+        </button>
+        <div className="flex items-center gap-2 lg:hidden">
+          <Logo className="h-8 w-8" />
+          <span className="text-[15px] font-bold text-slate-900">StockPilot</span>
+        </div>
+      </div>
+      <div className="flex items-center gap-2 sm:gap-3">
         <div className="hidden text-right sm:block">
           <p className="text-sm font-medium leading-tight text-slate-800">{user?.fullName}</p>
           <p className="truncate text-xs text-slate-400">{user?.organizationName || user?.email}</p>
@@ -145,11 +162,14 @@ function Header({ children }: { children?: ReactNode }) {
         <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-brand-600 text-xs font-semibold text-white">
           {initials(user?.fullName)}
         </span>
-        <Badge color="brand">{user?.role}</Badge>
-        <div className="h-6 w-px bg-slate-200" />
+        <span className="hidden sm:inline-flex">
+          <Badge color="brand">{user?.role}</Badge>
+        </span>
+        <div className="hidden h-6 w-px bg-slate-200 sm:block" />
         <button
           onClick={logout}
           title="Sign out"
+          aria-label="Sign out"
           className="rounded-lg p-2 text-slate-400 transition hover:bg-slate-100 hover:text-red-600"
         >
           <LogOutIcon className="text-lg" />
@@ -160,27 +180,38 @@ function Header({ children }: { children?: ReactNode }) {
 }
 
 export function AppLayout() {
-  const [collapsed, setCollapsed] = useState<boolean>(
-    () => localStorage.getItem(COLLAPSE_KEY) === "1",
-  );
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const [sidebarExpanded, setSidebarExpanded] = useState(false);
 
-  const toggle = () => {
-    setCollapsed((c) => {
-      const next = !c;
-      localStorage.setItem(COLLAPSE_KEY, next ? "1" : "0");
-      return next;
-    });
-  };
+  // Escape closes the mobile drawer.
+  useEffect(() => {
+    function onKey(e: KeyboardEvent) {
+      if (e.key === "Escape") setMobileOpen(false);
+    }
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, []);
 
   return (
-    <div className="flex h-screen overflow-hidden">
-      <Sidebar collapsed={collapsed} onToggle={toggle} />
-      <div className="flex flex-1 flex-col overflow-hidden">
-        <Header />
-        <main className="flex-1 overflow-y-auto bg-slate-50 p-6 lg:p-8">
-          <div className="mx-auto max-w-[1400px]">
-            <Outlet />
-          </div>
+    <div className="flex h-screen overflow-hidden bg-slate-50">
+      <Sidebar
+        mobileOpen={mobileOpen}
+        onNavigate={() => setMobileOpen(false)}
+        onExpandedChange={setSidebarExpanded}
+      />
+      {/* Reserves the rail's current width on desktop, growing/shrinking in step with
+          it so expanding the rail pushes this content aside instead of covering it. */}
+      <div
+        className={`hidden shrink-0 transition-[width] duration-200 ease-out lg:block ${
+          sidebarExpanded ? "lg:w-64" : "lg:w-[76px]"
+        }`}
+        aria-hidden="true"
+      />
+
+      <div className="flex min-w-0 flex-1 flex-col overflow-hidden">
+        <Header onMenu={() => setMobileOpen(true)} />
+        <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8">
+          <Outlet />
         </main>
       </div>
     </div>

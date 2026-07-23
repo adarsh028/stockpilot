@@ -209,6 +209,12 @@ export const PanelLeftIcon = (p: IconProps) => (
   </Base>
 );
 
+export const MenuIcon = (p: IconProps) => (
+  <Base {...p}>
+    <path d="M3 6h18M3 12h18M3 18h18" />
+  </Base>
+);
+
 /** Brand mark — a rounded gradient tile with a stylised stacked-boxes glyph. */
 export function Logo({ className = "" }: { className?: string }) {
   return (

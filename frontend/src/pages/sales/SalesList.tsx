@@ -47,7 +47,7 @@ export default function SalesList() {
       </PageHeader>
 
       <Card>
-        <div className="mb-4 w-56">
+        <div className="mb-4 w-full sm:w-56">
           <Select label="Filter by channel" value={channelId} onChange={(e) => { setChannelId(e.target.value); setPage(0); }}>
             <option value="">All channels</option>
             {channels.data?.map((c) => (

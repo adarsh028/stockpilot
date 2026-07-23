@@ -82,7 +82,7 @@ export function Select({
 
 export function Card({ children, className = "" }: { children: ReactNode; className?: string }) {
   return (
-    <div className={`rounded-xl border border-slate-200 bg-white p-5 shadow-card ${className}`}>
+    <div className={`rounded-xl border border-slate-200 bg-white p-4 shadow-card sm:p-5 ${className}`}>
       {children}
     </div>
   );
@@ -103,7 +103,9 @@ export function PageHeader({
         <h1 className="text-xl font-semibold text-slate-900 sm:text-[1.6rem] sm:leading-8">{title}</h1>
         {subtitle && <p className="mt-1 text-sm text-slate-500">{subtitle}</p>}
       </div>
-      {children && <div className="flex flex-wrap items-center gap-2">{children}</div>}
+      {children && (
+        <div className="flex w-full flex-wrap items-center gap-2 sm:w-auto">{children}</div>
+      )}
     </div>
   );
 }

@@ -41,18 +41,18 @@ export default function Settings() {
       <Card className="space-y-4">
         <h2 className="text-sm font-semibold text-slate-800">Organization profile</h2>
         <Input label="Organization name" value={name} onChange={(e) => setName(e.target.value)} disabled={!isOwner} />
-        <div className="grid grid-cols-2 gap-4">
-          <div className="rounded-lg border border-slate-200 bg-slate-50/60 px-3 py-2.5">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <div className="min-w-0 rounded-lg border border-slate-200 bg-slate-50/60 px-3 py-2.5">
             <span className="block text-[11px] font-semibold uppercase tracking-wider text-slate-400">Slug</span>
-            <span className="text-sm text-slate-700">{org.data?.slug}</span>
+            <span className="block truncate text-sm text-slate-700">{org.data?.slug}</span>
           </div>
-          <div className="rounded-lg border border-slate-200 bg-slate-50/60 px-3 py-2.5">
+          <div className="min-w-0 rounded-lg border border-slate-200 bg-slate-50/60 px-3 py-2.5">
             <span className="block text-[11px] font-semibold uppercase tracking-wider text-slate-400">Plan</span>
-            <span className="text-sm text-slate-700">{org.data?.plan}</span>
+            <span className="block truncate text-sm text-slate-700">{org.data?.plan}</span>
           </div>
         </div>
         {isOwner && (
-          <div className="flex items-center gap-3">
+          <div className="flex flex-wrap items-center gap-3">
             <Button onClick={() => save.mutate()} disabled={save.isPending}>
               {save.isPending ? "Saving..." : "Save changes"}
             </Button>
@@ -146,12 +146,12 @@ function GoogleDriveCard({ canManage, isOwner }: { canManage: boolean; isOwner: 
           <code className="rounded bg-white/70 px-1 font-mono text-xs">GOOGLE_CLIENT_SECRET</code>.
         </p>
       ) : connected ? (
-        <div className="flex items-center justify-between gap-4 rounded-lg border border-slate-200 bg-slate-50/60 px-3 py-2.5">
-          <div className="text-sm">
+        <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-slate-200 bg-slate-50/60 px-3 py-2.5">
+          <div className="min-w-0 text-sm">
             <span className="inline-flex items-center gap-2 font-medium text-emerald-700">
-              <span className="h-2 w-2 rounded-full bg-emerald-500" /> Connected
+              <span className="h-2 w-2 shrink-0 rounded-full bg-emerald-500" /> Connected
             </span>
-            {data?.email && <span className="ml-2 text-slate-500">{data.email}</span>}
+            {data?.email && <span className="ml-2 break-all text-slate-500">{data.email}</span>}
           </div>
           {isOwner && (
             <Button
@@ -165,7 +165,7 @@ function GoogleDriveCard({ canManage, isOwner }: { canManage: boolean; isOwner: 
           )}
         </div>
       ) : (
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-3">
           {canManage ? (
             <Button onClick={() => connect.mutate()} disabled={connect.isPending}>
               {connect.isPending ? "Redirecting…" : "Connect Google Drive"}

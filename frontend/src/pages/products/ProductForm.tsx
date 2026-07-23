@@ -96,7 +96,7 @@ export default function ProductForm() {
         </Card>
 
         <Card className="space-y-4">
-          <div className="flex items-center justify-between">
+          <div className="flex flex-wrap items-center justify-between gap-2">
             <h2 className="text-sm font-semibold text-slate-800">SKUs / Variants</h2>
             <Button type="button" variant="secondary" size="sm" onClick={() => setSkus([...skus, { ...emptySku }])}>
               <PlusIcon className="text-base" /> Add SKU
@@ -119,7 +119,7 @@ export default function ProductForm() {
                   </button>
                 )}
               </div>
-              <div className="grid grid-cols-1 gap-3 sm:grid-cols-6">
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-6">
                 <div className="sm:col-span-2">
                   <Input label="SKU code" value={s.sku} onChange={(e) => updateSku(i, "sku", e.target.value)} required />
                 </div>
@@ -141,7 +141,7 @@ export default function ProductForm() {
           ))}
         </Card>
 
-        <div className="flex justify-end gap-2">
+        <div className="flex flex-wrap justify-end gap-2">
           <Button type="button" variant="secondary" onClick={() => navigate("/products")}>
             Cancel
           </Button>
