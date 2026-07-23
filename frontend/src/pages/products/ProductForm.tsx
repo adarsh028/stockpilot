@@ -107,7 +107,7 @@ export default function ProductForm() {
           </div>
           <p className="text-xs text-slate-400">
             Don't see the category you need?{" "}
-            <Link to="/settings/categories" className="font-medium text-brand-600 hover:text-brand-700">
+            <Link to="/master-data" className="font-medium text-brand-600 hover:text-brand-700">
               Manage categories
             </Link>
             .

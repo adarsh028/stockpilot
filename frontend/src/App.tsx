@@ -22,7 +22,8 @@ import TeamList from "./pages/team/TeamList";
 import SettingsLayout from "./pages/settings/SettingsLayout";
 import SettingsGeneral from "./pages/settings/SettingsGeneral";
 import SettingsIntegrations from "./pages/settings/SettingsIntegrations";
-import Categories from "./pages/settings/Categories";
+import MasterDataLayout from "./pages/masterdata/MasterDataLayout";
+import Categories from "./pages/masterdata/Categories";
 
 export default function App() {
   return (
@@ -71,18 +72,22 @@ export default function App() {
           }
         />
 
-        {/* Settings — general, integrations and categories are tabs of one section. */}
+        {/* Master Data — reference lists (categories today) as tabs of one section. */}
+        <Route
+          path="/master-data"
+          element={
+            <ProtectedRoute roles={["OWNER", "ADMIN"]}>
+              <MasterDataLayout />
+            </ProtectedRoute>
+          }
+        >
+          <Route index element={<Categories />} />
+        </Route>
+
+        {/* Settings — general and integrations are tabs of one section. */}
         <Route path="/settings" element={<SettingsLayout />}>
           <Route index element={<SettingsGeneral />} />
           <Route path="integrations" element={<SettingsIntegrations />} />
-          <Route
-            path="categories"
-            element={
-              <ProtectedRoute roles={["OWNER", "ADMIN"]}>
-                <Categories />
-              </ProtectedRoute>
-            }
-          />
         </Route>
       </Route>
 

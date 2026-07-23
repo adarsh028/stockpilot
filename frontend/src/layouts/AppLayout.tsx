@@ -6,6 +6,7 @@ import {
   ChannelsIcon,
   DashboardIcon,
   InventoryIcon,
+  LayersIcon,
   Logo,
   LogOutIcon,
   MenuIcon,
@@ -28,6 +29,7 @@ const NAV: NavItem[] = [
   { to: "/inventory", label: "Inventory", icon: InventoryIcon },
   { to: "/channels", label: "Channels", icon: ChannelsIcon },
   { to: "/sales", label: "Sales", icon: SalesIcon },
+  { to: "/master-data", label: "Master Data", icon: LayersIcon, roles: ["OWNER", "ADMIN"] },
   { to: "/team", label: "Team", icon: TeamIcon, roles: ["OWNER", "ADMIN"] },
   { to: "/settings", label: "Settings", icon: SettingsIcon },
 ];
