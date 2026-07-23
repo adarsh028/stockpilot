@@ -1,5 +1,7 @@
 package com.stockpilot.seed;
 
+import com.stockpilot.category.Category;
+import com.stockpilot.category.CategoryRepository;
 import com.stockpilot.channel.Channel;
 import com.stockpilot.channel.ChannelRepository;
 import com.stockpilot.channel.ChannelSeeder;
@@ -54,6 +56,7 @@ public class DemoDataSeeder implements CommandLineRunner {
     private final UserRepository userRepository;
     private final ChannelSeeder channelSeeder;
     private final ChannelRepository channelRepository;
+    private final CategoryRepository categoryRepository;
     private final ProductRepository productRepository;
     private final SkuRepository skuRepository;
     private final InventoryItemRepository inventoryItemRepository;
@@ -111,12 +114,20 @@ public class DemoDataSeeder implements CommandLineRunner {
     }
 
     private List<Sku> seedProducts(UUID orgId) {
+        Map<String, UUID> categoryIdByName = new HashMap<>();
         List<Sku> allSkus = new ArrayList<>();
         for (DemoDataConstants.ProductSeed ps : DemoDataConstants.PRODUCTS) {
+            UUID categoryId = categoryIdByName.computeIfAbsent(ps.category(), name -> {
+                Category category = new Category();
+                category.setOrganizationId(orgId);
+                category.setName(name);
+                return categoryRepository.save(category).getId();
+            });
+
             Product product = new Product();
             product.setOrganizationId(orgId);
             product.setName(ps.name());
-            product.setCategory(ps.category());
+            product.setCategoryId(categoryId);
             product.setBrandName(ps.brand());
             product.setDescription(ps.name() + " by " + ps.brand());
             productRepository.save(product);

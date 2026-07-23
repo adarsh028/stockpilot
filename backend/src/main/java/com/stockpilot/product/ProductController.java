@@ -33,10 +33,10 @@ public class ProductController {
     @GetMapping
     public PageResponse<ProductResponse> list(
             @RequestParam(required = false) String search,
-            @RequestParam(required = false) String category,
+            @RequestParam(required = false) String categoryId,
             @RequestParam(required = false) String status,
             @PageableDefault(size = 20, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
-        return productService.list(search, category, status, pageable);
+        return productService.list(search, categoryId, status, pageable);
     }
 
     @GetMapping("/{id}")

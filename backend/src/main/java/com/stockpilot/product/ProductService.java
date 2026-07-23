@@ -1,5 +1,7 @@
 package com.stockpilot.product;
 
+import com.stockpilot.category.Category;
+import com.stockpilot.category.CategoryRepository;
 import com.stockpilot.common.dto.PageResponse;
 import com.stockpilot.common.exception.ConflictException;
 import com.stockpilot.common.exception.ValidationException;
@@ -33,20 +35,33 @@ public class ProductService {
     private final SkuRepository skuRepository;
     private final SkuImageRepository skuImageRepository;
     private final InventoryItemRepository inventoryItemRepository;
+    private final CategoryRepository categoryRepository;
     private final CurrentTenant currentTenant;
     private final TenantGuard tenantGuard;
     private final ProductMapper mapper;
     private final com.stockpilot.integration.drive.GoogleDriveStorageService driveStorageService;
 
     @Transactional(readOnly = true)
-    public PageResponse<ProductResponse> list(String search, String category, String status, Pageable pageable) {
+    public PageResponse<ProductResponse> list(String search, String categoryId, String status, Pageable pageable) {
         UUID orgId = currentTenant.organizationId();
+        UUID categoryUuid = parseCategoryId(categoryId);
         Specification<Product> spec = Specification.where(ProductSpecifications.ownedBy(orgId))
                 .and(ProductSpecifications.search(search))
-                .and(ProductSpecifications.hasCategory(category))
+                .and(ProductSpecifications.hasCategory(categoryUuid))
                 .and(ProductSpecifications.hasStatus(status));
         Page<Product> page = productRepository.findAll(spec, pageable);
         return PageResponse.from(page, this::withDetails);
+    }
+
+    private UUID parseCategoryId(String categoryId) {
+        if (categoryId == null || categoryId.isBlank()) {
+            return null;
+        }
+        try {
+            return UUID.fromString(categoryId);
+        } catch (IllegalArgumentException e) {
+            throw new ValidationException("Invalid categoryId: " + categoryId);
+        }
     }
 
     @Transactional(readOnly = true)
@@ -123,13 +138,23 @@ public class ProductService {
 
     private void applyProductFields(Product product, ProductRequest req) {
         product.setName(req.name());
-        product.setCategory(req.category());
+        product.setCategoryId(resolveCategoryId(product.getOrganizationId(), req.categoryId()));
         product.setBrandName(req.brandName());
         product.setDescription(req.description());
         product.setImageUrl(req.imageUrl());
         if (req.status() != null && !req.status().isBlank()) {
             product.setStatus(ProductStatus.valueOf(req.status().toUpperCase()));
         }
+    }
+
+    private UUID resolveCategoryId(UUID orgId, String categoryId) {
+        if (categoryId == null || categoryId.isBlank()) {
+            return null;
+        }
+        UUID id = parseCategoryId(categoryId);
+        tenantGuard.loadOwned("Category", id, orgId,
+                () -> categoryRepository.findByIdAndOrganizationId(id, orgId));
+        return id;
     }
 
     private void createSku(UUID orgId, UUID productId, SkuRequest req) {
@@ -204,6 +229,9 @@ public class ProductService {
                     skuImageRepository.findBySkuIdAndOrganizationIdOrderByPrimaryDescSortOrderAscCreatedAtAsc(
                             sku.getId(), orgId));
         }
-        return mapper.toResponse(product, skus, inventoryBySku, imagesBySku);
+        Category category = product.getCategoryId() != null
+                ? categoryRepository.findByIdAndOrganizationId(product.getCategoryId(), orgId).orElse(null)
+                : null;
+        return mapper.toResponse(product, skus, inventoryBySku, imagesBySku, category);
     }
 }

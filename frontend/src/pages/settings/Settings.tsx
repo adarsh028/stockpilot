@@ -1,10 +1,11 @@
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { orgApi } from "@/api/users";
 import { googleDriveApi } from "@/api/integrations";
 import { Button, Card, Input, PageHeader } from "@/components/ui";
 import { ErrorState, LoadingSpinner } from "@/components/states";
-import { CheckCircleIcon } from "@/components/icons";
+import { CheckCircleIcon, ChevronRightIcon, ProductsIcon } from "@/components/icons";
 import { apiErrorMessage } from "@/api/client";
 import { useAuth } from "@/context/AuthContext";
 
@@ -33,38 +34,60 @@ export default function Settings() {
   if (org.isError) return <ErrorState message={apiErrorMessage(org.error)} />;
 
   return (
-    <div className="mx-auto max-w-2xl space-y-6">
+    <div className="space-y-6">
       <PageHeader title="Settings" subtitle="Manage your organization and integrations" />
 
-      <GoogleDriveCard canManage={isOwner || user?.role === "ADMIN"} isOwner={isOwner} />
+      <div className="grid grid-cols-1 gap-6 xl:grid-cols-2 xl:items-start">
+        <GoogleDriveCard canManage={isOwner || user?.role === "ADMIN"} isOwner={isOwner} />
 
-      <Card className="space-y-4">
-        <h2 className="text-sm font-semibold text-slate-800">Organization profile</h2>
-        <Input label="Organization name" value={name} onChange={(e) => setName(e.target.value)} disabled={!isOwner} />
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-          <div className="min-w-0 rounded-lg border border-slate-200 bg-slate-50/60 px-3 py-2.5">
-            <span className="block text-[11px] font-semibold uppercase tracking-wider text-slate-400">Slug</span>
-            <span className="block truncate text-sm text-slate-700">{org.data?.slug}</span>
+        <Card className="space-y-4">
+          <h2 className="text-sm font-semibold text-slate-800">Organization profile</h2>
+          <Input label="Organization name" value={name} onChange={(e) => setName(e.target.value)} disabled={!isOwner} />
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <div className="min-w-0 rounded-lg border border-slate-200 bg-slate-50/60 px-3 py-2.5">
+              <span className="block text-[11px] font-semibold uppercase tracking-wider text-slate-400">Slug</span>
+              <span className="block truncate text-sm text-slate-700">{org.data?.slug}</span>
+            </div>
+            <div className="min-w-0 rounded-lg border border-slate-200 bg-slate-50/60 px-3 py-2.5">
+              <span className="block text-[11px] font-semibold uppercase tracking-wider text-slate-400">Plan</span>
+              <span className="block truncate text-sm text-slate-700">{org.data?.plan}</span>
+            </div>
           </div>
-          <div className="min-w-0 rounded-lg border border-slate-200 bg-slate-50/60 px-3 py-2.5">
-            <span className="block text-[11px] font-semibold uppercase tracking-wider text-slate-400">Plan</span>
-            <span className="block truncate text-sm text-slate-700">{org.data?.plan}</span>
-          </div>
-        </div>
-        {isOwner && (
-          <div className="flex flex-wrap items-center gap-3">
-            <Button onClick={() => save.mutate()} disabled={save.isPending}>
-              {save.isPending ? "Saving..." : "Save changes"}
-            </Button>
-            {saved && (
-              <span className="inline-flex items-center gap-1.5 text-sm font-medium text-emerald-600">
-                <CheckCircleIcon className="text-base" /> Saved
+          {isOwner && (
+            <div className="flex flex-wrap items-center gap-3">
+              <Button onClick={() => save.mutate()} disabled={save.isPending}>
+                {save.isPending ? "Saving..." : "Save changes"}
+              </Button>
+              {saved && (
+                <span className="inline-flex items-center gap-1.5 text-sm font-medium text-emerald-600">
+                  <CheckCircleIcon className="text-base" /> Saved
+                </span>
+              )}
+            </div>
+          )}
+          {save.isError && <ErrorState message={apiErrorMessage(save.error)} />}
+        </Card>
+
+        {(isOwner || user?.role === "ADMIN") && (
+          <Card>
+            <Link
+              to="/settings/categories"
+              className="flex items-center justify-between gap-3 text-slate-800 transition hover:text-brand-600"
+            >
+              <span className="flex items-center gap-3">
+                <ProductsIcon className="text-lg text-slate-400" />
+                <span>
+                  <span className="block text-sm font-semibold">Product categories</span>
+                  <span className="block text-sm text-slate-500">
+                    Manage the categories available when adding a product
+                  </span>
+                </span>
               </span>
-            )}
-          </div>
+              <ChevronRightIcon className="shrink-0 text-lg text-slate-400" />
+            </Link>
+          </Card>
         )}
-        {save.isError && <ErrorState message={apiErrorMessage(save.error)} />}
-      </Card>
+      </div>
     </div>
   );
 }

@@ -1,5 +1,7 @@
 package com.stockpilot.importer;
 
+import com.stockpilot.category.Category;
+import com.stockpilot.category.CategoryRepository;
 import com.stockpilot.inventory.InventoryItem;
 import com.stockpilot.inventory.InventoryItemRepository;
 import com.stockpilot.product.Product;
@@ -26,6 +28,7 @@ public class ProductImporter {
     private final ProductRepository productRepository;
     private final SkuRepository skuRepository;
     private final InventoryItemRepository inventoryItemRepository;
+    private final CategoryRepository categoryRepository;
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void importRow(UUID orgId, ImportRow row) {
@@ -51,7 +54,7 @@ public class ProductImporter {
                         Product p = new Product();
                         p.setOrganizationId(orgId);
                         p.setName(name);
-                        p.setCategory(row.get("category"));
+                        p.setCategoryId(resolveCategoryId(orgId, row.get("category")));
                         p.setBrandName(row.get("brandname"));
                         return productRepository.save(p);
                     });
@@ -88,6 +91,21 @@ public class ProductImporter {
             item.setReorderLevel(reorder);
             inventoryItemRepository.save(item);
         }
+    }
+
+    /** Finds the org's category by name (case-insensitive), creating it if the sheet references a new one. */
+    private UUID resolveCategoryId(UUID orgId, String categoryName) {
+        if (isBlank(categoryName)) {
+            return null;
+        }
+        return categoryRepository.findByOrganizationIdAndNameIgnoreCase(orgId, categoryName.trim())
+                .orElseGet(() -> {
+                    Category category = new Category();
+                    category.setOrganizationId(orgId);
+                    category.setName(categoryName.trim());
+                    return categoryRepository.save(category);
+                })
+                .getId();
     }
 
     private boolean isBlank(String s) {

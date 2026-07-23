@@ -10,6 +10,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.util.UUID;
+
 @Getter
 @Setter
 @Entity
@@ -20,7 +22,8 @@ public class Product extends TenantEntity {
     @Column(nullable = false)
     private String name;
 
-    private String category;
+    @Column(name = "category_id")
+    private UUID categoryId;
 
     @Column(name = "brand_name")
     private String brandName;

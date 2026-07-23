@@ -9,7 +9,7 @@ import java.util.List;
 
 public record ProductRequest(
         @NotBlank @Size(max = 200) String name,
-        @Size(max = 100) String category,
+        String categoryId,
         @Size(max = 100) String brandName,
         String description,
         @Size(max = 500) String imageUrl,

@@ -1,8 +1,9 @@
 import { FormEvent, useEffect, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { productsApi } from "@/api/products";
-import { Button, Card, Input, PageHeader } from "@/components/ui";
+import { categoriesApi } from "@/api/categories";
+import { Button, Card, Input, PageHeader, Select } from "@/components/ui";
 import { ErrorState, LoadingSpinner } from "@/components/states";
 import { PlusIcon, TrashIcon } from "@/components/icons";
 import { apiErrorMessage } from "@/api/client";
@@ -17,12 +18,14 @@ export default function ProductForm() {
   const editing = !!id;
 
   const [name, setName] = useState("");
-  const [category, setCategory] = useState("");
+  const [categoryId, setCategoryId] = useState("");
   const [brandName, setBrandName] = useState("");
   const [description, setDescription] = useState("");
   const [skus, setSkus] = useState<SkuInput[]>([{ ...emptySku }]);
   const [error, setError] = useState("");
   const [saving, setSaving] = useState(false);
+
+  const categories = useQuery({ queryKey: ["categories"], queryFn: () => categoriesApi.list() });
 
   const existing = useQuery({
     queryKey: ["product", id],
@@ -34,7 +37,7 @@ export default function ProductForm() {
     if (existing.data) {
       const p = existing.data;
       setName(p.name);
-      setCategory(p.category ?? "");
+      setCategoryId(p.categoryId ?? "");
       setBrandName(p.brandName ?? "");
       setDescription(p.description ?? "");
       setSkus(
@@ -64,7 +67,7 @@ export default function ProductForm() {
     setError("");
     setSaving(true);
     try {
-      const body = { name, category, brandName, description, skus };
+      const body = { name, categoryId: categoryId || undefined, brandName, description, skus };
       if (editing) await productsApi.update(id!, body);
       else await productsApi.create(body);
       navigate("/products");
@@ -89,9 +92,26 @@ export default function ProductForm() {
           <h2 className="text-sm font-semibold text-slate-800">Details</h2>
           <Input label="Name" value={name} onChange={(e) => setName(e.target.value)} required />
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <Input label="Category" value={category} onChange={(e) => setCategory(e.target.value)} />
+            <Select label="Category" value={categoryId} onChange={(e) => setCategoryId(e.target.value)}>
+              <option value="">No category</option>
+              {categories.data
+                ?.filter((c) => c.isActive || c.id === categoryId)
+                .map((c) => (
+                  <option key={c.id} value={c.id}>
+                    {c.name}
+                    {!c.isActive ? " (inactive)" : ""}
+                  </option>
+                ))}
+            </Select>
             <Input label="Brand" value={brandName} onChange={(e) => setBrandName(e.target.value)} />
           </div>
+          <p className="text-xs text-slate-400">
+            Don't see the category you need?{" "}
+            <Link to="/settings/categories" className="font-medium text-brand-600 hover:text-brand-700">
+              Manage categories
+            </Link>
+            .
+          </p>
           <Input label="Description" value={description} onChange={(e) => setDescription(e.target.value)} />
         </Card>
 

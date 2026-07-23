@@ -80,7 +80,7 @@ export default function ProductList() {
           <div className="relative">
             <SearchIcon className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-base text-slate-400" />
             <Input
-              placeholder="Search by name, brand, category..."
+              placeholder="Search by name or brand..."
               className="pl-9"
               value={search}
               onChange={(e) => {
@@ -124,7 +124,7 @@ export default function ProductList() {
                           <span>{p.name}</span>
                         </div>
                       </td>
-                      <td>{p.category ?? "—"}</td>
+                      <td>{p.categoryName ?? "—"}</td>
                       <td>{p.brandName ?? "—"}</td>
                       <td className="text-center tabular-nums">{p.skus.length}</td>
                       <td>

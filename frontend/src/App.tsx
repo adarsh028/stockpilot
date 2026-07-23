@@ -18,6 +18,7 @@ import SalesImport from "./pages/sales/SalesImport";
 import ImportBatches from "./pages/sales/ImportBatches";
 import TeamList from "./pages/team/TeamList";
 import Settings from "./pages/settings/Settings";
+import Categories from "./pages/settings/Categories";
 
 export default function App() {
   return (
@@ -55,6 +56,14 @@ export default function App() {
           }
         />
         <Route path="/settings" element={<Settings />} />
+        <Route
+          path="/settings/categories"
+          element={
+            <ProtectedRoute roles={["OWNER", "ADMIN"]}>
+              <Categories />
+            </ProtectedRoute>
+          }
+        />
       </Route>
 
       <Route path="*" element={<Navigate to="/" replace />} />

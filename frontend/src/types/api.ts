@@ -63,6 +63,12 @@ export interface Channel {
   isActive: boolean;
 }
 
+export interface Category {
+  id: string;
+  name: string;
+  isActive: boolean;
+}
+
 export interface SkuImage {
   id: string;
   skuId: string;
@@ -86,7 +92,8 @@ export interface Sku {
 export interface Product {
   id: string;
   name: string;
-  category: string | null;
+  categoryId: string | null;
+  categoryName: string | null;
   brandName: string | null;
   description: string | null;
   imageUrl: string | null;
@@ -108,7 +115,7 @@ export interface SkuInput {
 
 export interface ProductInput {
   name: string;
-  category?: string;
+  categoryId?: string;
   brandName?: string;
   description?: string;
   imageUrl?: string;

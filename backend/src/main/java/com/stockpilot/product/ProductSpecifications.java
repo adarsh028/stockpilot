@@ -20,16 +20,15 @@ public final class ProductSpecifications {
         String like = "%" + term.trim().toLowerCase() + "%";
         return (root, query, cb) -> cb.or(
                 cb.like(cb.lower(root.get("name")), like),
-                cb.like(cb.lower(root.get("brandName")), like),
-                cb.like(cb.lower(root.get("category")), like)
+                cb.like(cb.lower(root.get("brandName")), like)
         );
     }
 
-    public static Specification<Product> hasCategory(String category) {
-        if (category == null || category.isBlank()) {
+    public static Specification<Product> hasCategory(UUID categoryId) {
+        if (categoryId == null) {
             return null;
         }
-        return (root, query, cb) -> cb.equal(cb.lower(root.get("category")), category.trim().toLowerCase());
+        return (root, query, cb) -> cb.equal(root.get("categoryId"), categoryId);
     }
 
     public static Specification<Product> hasStatus(String status) {

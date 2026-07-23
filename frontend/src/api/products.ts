@@ -3,7 +3,7 @@ import { ImportBatch, Page, Product, ProductInput, SkuImage } from "@/types/api"
 
 export interface ProductListParams {
   search?: string;
-  category?: string;
+  categoryId?: string;
   status?: string;
   page?: number;
   size?: number;

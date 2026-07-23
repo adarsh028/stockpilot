@@ -1,5 +1,6 @@
 package com.stockpilot.product;
 
+import com.stockpilot.category.Category;
 import com.stockpilot.inventory.InventoryItem;
 import com.stockpilot.product.dto.ProductResponse;
 import com.stockpilot.product.dto.SkuImageResponse;
@@ -48,7 +49,8 @@ public class ProductMapper {
 
     public ProductResponse toResponse(Product product, List<Sku> skus,
                                       Map<UUID, InventoryItem> inventoryBySkuId,
-                                      Map<UUID, List<SkuImage>> imagesBySkuId) {
+                                      Map<UUID, List<SkuImage>> imagesBySkuId,
+                                      Category category) {
         List<SkuResponse> skuResponses = skus.stream()
                 .map(sku -> toSkuResponse(
                         sku,
@@ -58,7 +60,8 @@ public class ProductMapper {
         return new ProductResponse(
                 product.getId().toString(),
                 product.getName(),
-                product.getCategory(),
+                product.getCategoryId() != null ? product.getCategoryId().toString() : null,
+                category != null ? category.getName() : null,
                 product.getBrandName(),
                 product.getDescription(),
                 product.getImageUrl(),
