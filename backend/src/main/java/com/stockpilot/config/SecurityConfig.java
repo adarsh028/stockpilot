@@ -33,6 +33,11 @@ public class SecurityConfig {
                         .requestMatchers(
                                 "/api/v1/auth/**",
                                 "/api/v1/templates/**",
+                                // OAuth redirect lands here without a JWT; secured by signed state.
+                                "/api/v1/integrations/google-drive/callback",
+                                // Image proxy is loaded via <img src>; secured by signed token in the URL.
+                                "/api/v1/images/*/content",
+                                "/uploads/**",
                                 "/swagger-ui/**",
                                 "/swagger-ui.html",
                                 "/v3/api-docs/**",

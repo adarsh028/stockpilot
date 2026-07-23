@@ -1,5 +1,5 @@
 import client from "./client";
-import { ImportBatch, Page, Product, ProductInput } from "@/types/api";
+import { ImportBatch, Page, Product, ProductInput, SkuImage } from "@/types/api";
 
 export interface ProductListParams {
   search?: string;
@@ -31,4 +31,26 @@ export const productsApi = {
       })
       .then((r) => r.data);
   },
+};
+
+export const skuImagesApi = {
+  list: (skuId: string) =>
+    client.get<SkuImage[]>(`/skus/${skuId}/images`).then((r) => r.data),
+
+  upload: (skuId: string, file: File, primary = false) => {
+    const form = new FormData();
+    form.append("file", file);
+    form.append("primary", String(primary));
+    return client
+      .post<SkuImage>(`/skus/${skuId}/images`, form, {
+        headers: { "Content-Type": "multipart/form-data" },
+      })
+      .then((r) => r.data);
+  },
+
+  setPrimary: (skuId: string, imageId: string) =>
+    client.patch<SkuImage>(`/skus/${skuId}/images/${imageId}/primary`).then((r) => r.data),
+
+  remove: (skuId: string, imageId: string) =>
+    client.delete(`/skus/${skuId}/images/${imageId}`).then((r) => r.data),
 };

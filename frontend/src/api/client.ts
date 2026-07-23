@@ -11,7 +11,12 @@ import axios, {
  */
 const client = axios.create({
   baseURL: import.meta.env.VITE_API_BASE_URL,
-  headers: { "Content-Type": "application/json" },
+  headers: {
+    "Content-Type": "application/json",
+    // Bypasses ngrok's free-tier browser warning interstitial, which otherwise
+    // returns an HTML page with no CORS headers and shows up as a CORS error.
+    "ngrok-skip-browser-warning": "true",
+  },
 });
 
 const ACCESS_KEY = "sp_access_token";
@@ -49,7 +54,12 @@ async function refreshAccessToken(): Promise<string | null> {
     const resp = await axios.post(
       `${import.meta.env.VITE_API_BASE_URL}/auth/refresh`,
       { refreshToken: refresh },
-      { headers: { "Content-Type": "application/json" } }
+      {
+        headers: {
+          "Content-Type": "application/json",
+          "ngrok-skip-browser-warning": "true",
+        },
+      }
     );
     const { accessToken, refreshToken } = resp.data;
     tokenStore.set(accessToken, refreshToken);

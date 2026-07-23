@@ -6,6 +6,26 @@ import { Button, Card, Input } from "@/components/ui";
 import { Badge, EmptyState, ErrorState, LoadingSpinner } from "@/components/states";
 import { apiErrorMessage } from "@/api/client";
 import { useAuth } from "@/context/AuthContext";
+import { Product } from "@/types/api";
+
+/** Primary image of a product's first variant that has one, else any first image. */
+function primaryImage(p: Product): string | null {
+  for (const sku of p.skus) {
+    const primary = sku.images?.find((img) => img.primary);
+    if (primary) return primary.url;
+  }
+  for (const sku of p.skus) {
+    if (sku.images?.length) return sku.images[0].url;
+  }
+  return p.imageUrl ?? null;
+}
+
+function Thumbnail({ src }: { src: string | null }) {
+  if (!src) {
+    return <div className="h-10 w-10 shrink-0 rounded-md bg-slate-100" />;
+  }
+  return <img src={src} alt="" className="h-10 w-10 shrink-0 rounded-md border border-slate-200 object-cover" />;
+}
 
 export default function ProductList() {
   const navigate = useNavigate();
@@ -76,7 +96,12 @@ export default function ProductList() {
                 <tbody>
                   {query.data?.content.map((p) => (
                     <tr key={p.id} className="border-b border-slate-50 hover:bg-slate-50">
-                      <td className="py-2 font-medium text-slate-700">{p.name}</td>
+                      <td className="py-2 font-medium text-slate-700">
+                        <div className="flex items-center gap-3">
+                          <Thumbnail src={primaryImage(p)} />
+                          <span>{p.name}</span>
+                        </div>
+                      </td>
                       <td className="py-2 text-slate-500">{p.category ?? "—"}</td>
                       <td className="py-2 text-slate-500">{p.brandName ?? "—"}</td>
                       <td className="py-2 text-center">{p.skus.length}</td>

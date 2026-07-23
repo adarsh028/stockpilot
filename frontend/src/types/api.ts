@@ -63,6 +63,14 @@ export interface Channel {
   isActive: boolean;
 }
 
+export interface SkuImage {
+  id: string;
+  skuId: string;
+  url: string;
+  primary: boolean;
+  sortOrder: number;
+}
+
 export interface Sku {
   id: string;
   productId: string;
@@ -72,6 +80,7 @@ export interface Sku {
   sellingPrice: number;
   quantityOnHand: number;
   reorderLevel: number;
+  images: SkuImage[];
 }
 
 export interface Product {
@@ -212,6 +221,13 @@ export interface Organization {
   plan: string;
   status: string;
   createdAt: string;
+}
+
+export interface DriveStatus {
+  connected: boolean;
+  configured: boolean;
+  email: string | null;
+  connectedAt: string | null;
 }
 
 export interface ApiError {

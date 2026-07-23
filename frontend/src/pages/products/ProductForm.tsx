@@ -6,6 +6,7 @@ import { Button, Card, Input } from "@/components/ui";
 import { ErrorState, LoadingSpinner } from "@/components/states";
 import { apiErrorMessage } from "@/api/client";
 import { SkuInput } from "@/types/api";
+import SkuImageManager from "@/components/SkuImageManager";
 
 const emptySku: SkuInput = { sku: "", costPrice: 0, sellingPrice: 0, quantityOnHand: 0, reorderLevel: 0 };
 
@@ -114,6 +115,15 @@ export default function ProductForm() {
                   >
                     ✕
                   </button>
+                )}
+              </div>
+              <div className="border-t border-slate-100 pt-3 sm:col-span-6">
+                {s.id ? (
+                  <SkuImageManager skuId={s.id} />
+                ) : (
+                  <p className="text-xs text-slate-400">
+                    Save the product first, then reopen it to add images for this variant.
+                  </p>
                 )}
               </div>
             </div>

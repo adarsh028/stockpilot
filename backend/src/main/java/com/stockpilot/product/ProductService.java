@@ -31,10 +31,12 @@ public class ProductService {
 
     private final ProductRepository productRepository;
     private final SkuRepository skuRepository;
+    private final SkuImageRepository skuImageRepository;
     private final InventoryItemRepository inventoryItemRepository;
     private final CurrentTenant currentTenant;
     private final TenantGuard tenantGuard;
     private final ProductMapper mapper;
+    private final com.stockpilot.integration.drive.GoogleDriveStorageService driveStorageService;
 
     @Transactional(readOnly = true)
     public PageResponse<ProductResponse> list(String search, String category, String status, Pageable pageable) {
@@ -96,6 +98,7 @@ public class ProductService {
         }
         // Remove SKUs no longer present in the payload.
         for (Sku removed : existingById.values()) {
+            deleteSkuImages(orgId, removed.getId());
             inventoryItemRepository.findByOrganizationIdAndSkuId(orgId, removed.getId())
                     .ifPresent(inventoryItemRepository::delete);
             skuRepository.delete(removed);
@@ -110,6 +113,7 @@ public class ProductService {
                 () -> productRepository.findByIdAndOrganizationId(id, orgId));
         List<Sku> skus = skuRepository.findByProductIdAndOrganizationId(product.getId(), orgId);
         for (Sku sku : skus) {
+            deleteSkuImages(orgId, sku.getId());
             inventoryItemRepository.findByOrganizationIdAndSkuId(orgId, sku.getId())
                     .ifPresent(inventoryItemRepository::delete);
         }
@@ -176,13 +180,30 @@ public class ProductService {
         inventoryItemRepository.save(item);
     }
 
-    private ProductResponse withDetails(Product product) {
-        List<Sku> skus = skuRepository.findByProductIdAndOrganizationId(product.getId(), product.getOrganizationId());
-        Map<UUID, InventoryItem> inventoryBySku = new HashMap<>();
-        for (Sku sku : skus) {
-            inventoryItemRepository.findByOrganizationIdAndSkuId(product.getOrganizationId(), sku.getId())
-                    .ifPresent(item -> inventoryBySku.put(sku.getId(), item));
+    /** Deletes a SKU's image rows and their backing Drive files (best-effort per file). */
+    private void deleteSkuImages(UUID orgId, UUID skuId) {
+        List<SkuImage> images = skuImageRepository.findBySkuIdAndOrganizationId(skuId, orgId);
+        for (SkuImage image : images) {
+            if (image.getUrl() != null && image.getUrl().startsWith(SkuImage.GDRIVE_PREFIX)) {
+                String fileId = image.getUrl().substring(SkuImage.GDRIVE_PREFIX.length());
+                driveStorageService.delete(orgId, fileId);
+            }
         }
-        return mapper.toResponse(product, skus, inventoryBySku);
+        skuImageRepository.deleteAll(images);
+    }
+
+    private ProductResponse withDetails(Product product) {
+        UUID orgId = product.getOrganizationId();
+        List<Sku> skus = skuRepository.findByProductIdAndOrganizationId(product.getId(), orgId);
+        Map<UUID, InventoryItem> inventoryBySku = new HashMap<>();
+        Map<UUID, List<SkuImage>> imagesBySku = new HashMap<>();
+        for (Sku sku : skus) {
+            inventoryItemRepository.findByOrganizationIdAndSkuId(orgId, sku.getId())
+                    .ifPresent(item -> inventoryBySku.put(sku.getId(), item));
+            imagesBySku.put(sku.getId(),
+                    skuImageRepository.findBySkuIdAndOrganizationIdOrderByPrimaryDescSortOrderAscCreatedAtAsc(
+                            sku.getId(), orgId));
+        }
+        return mapper.toResponse(product, skus, inventoryBySku, imagesBySku);
     }
 }

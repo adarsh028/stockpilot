@@ -1,6 +1,7 @@
 package com.stockpilot.product.dto;
 
 import java.math.BigDecimal;
+import java.util.List;
 import java.util.Map;
 
 public record SkuResponse(
@@ -11,6 +12,7 @@ public record SkuResponse(
         BigDecimal costPrice,
         BigDecimal sellingPrice,
         Integer quantityOnHand,
-        Integer reorderLevel
+        Integer reorderLevel,
+        List<SkuImageResponse> images
 ) {
 }

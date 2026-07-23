@@ -13,7 +13,6 @@ revenue sold, sales by channel, top products, and trends over selectable date ra
 
 ```
 stockpilot/
-  docker-compose.yml     # PostgreSQL (+ optional pgAdmin)
   backend/               # Spring Boot (Maven)
   frontend/              # React + Vite + TypeScript
 ```
@@ -22,26 +21,23 @@ stockpilot/
 
 ## Prerequisites
 
-- Docker + Docker Compose
+- PostgreSQL installed locally (managed with pgAdmin 4, bundled with the PostgreSQL installer)
 - Java 21 and Maven 3.9+
 - Node 20+ and npm
 
 ---
 
-## 1. Start PostgreSQL
+## 1. Create the database
 
-From the repo root:
+Using pgAdmin 4 (or `psql`), create an empty database for the app to connect to — Flyway creates
+and updates every table/column automatically on backend startup, so nothing else is needed here.
 
-```bash
-docker compose up -d postgres
+```sql
+CREATE DATABASE stockpilot;
 ```
 
-This starts PostgreSQL 16 on `localhost:5432` with database/user/password `stockpilot` / `stockpilot` / `stockpilot`.
-Optionally start pgAdmin (`http://localhost:5050`) with:
-
-```bash
-docker compose --profile tools up -d
-```
+Note the port your local PostgreSQL server listens on (check `postgresql.conf`, or the pgAdmin
+server properties) — it may not be the default `5432` if something else is already using that port.
 
 ---
 
@@ -53,14 +49,17 @@ docker compose --profile tools up -d
 cp backend/.env.example backend/.env
 ```
 
-The defaults match docker-compose and work out of the box. Key variables:
+Update the database variables to match your local PostgreSQL install (port, username, password);
+everything else works out of the box. Key variables:
 
 | Variable | Purpose | Default |
 |---|---|---|
-| `DB_URL` / `DB_USERNAME` / `DB_PASSWORD` | PostgreSQL connection | matches docker-compose |
+| `DB_URL` / `DB_USERNAME` / `DB_PASSWORD` | PostgreSQL connection | points at your local Postgres server |
 | `JWT_SECRET` | JWT signing key (≥ 256 bits) | dev default provided |
 | `BREVO_API_KEY` | Brevo transactional email key | **blank** |
 | `BREVO_SENDER_EMAIL` / `BREVO_SENDER_NAME` | Email sender identity | placeholders |
+| `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` | Google Drive OAuth client (per-tenant product image storage) | **blank** |
+| `DRIVE_TOKEN_ENCRYPTION_KEY` | Encrypts stored Drive OAuth tokens at rest | dev default provided |
 | `CORS_ALLOWED_ORIGIN` | Frontend origin | `http://localhost:5173` |
 | `APP_INVENTORY_STOCK_POLICY` | `WARN` (allow + flag) or `BLOCK` | `WARN` |
 
@@ -78,8 +77,9 @@ cp frontend/.env.example frontend/.env   # VITE_API_BASE_URL=http://localhost:80
 `src/api/client.ts` is the only place a base URL is constructed; every API call goes through that one
 Axios instance, so changing `VITE_API_BASE_URL` repoints the whole app.
 
-Spring Boot reads `backend/.env` automatically if you export it, or you can pass the variables via
-your shell / IDE run configuration. The app also boots fine on the built-in defaults.
+The backend auto-loads `backend/.env` on startup (via `spring-dotenv`) when run from the `backend/`
+directory — no manual `export` needed. You can still override any value via your shell / IDE run
+configuration, and the app boots fine on the built-in defaults if `.env` is absent.
 
 ---
 
@@ -121,12 +121,9 @@ across channels — so the dashboard is populated immediately.
 | Admin | `admin@demo.stockpilot.io` | `Demo@12345` |
 | Staff | `staff@demo.stockpilot.io` | `Demo@12345` |
 
-**Re-seed:** the seeder is idempotent (skips if the demo org exists). To regenerate, drop the demo
-data and restart the backend:
-
-```bash
-docker compose down -v && docker compose up -d postgres   # wipes the DB volume
-```
+**Re-seed:** the seeder is idempotent (skips if the demo org exists). To regenerate, drop and
+recreate the database in pgAdmin 4 (or `DROP DATABASE stockpilot; CREATE DATABASE stockpilot;` in
+`psql`), then restart the backend — Flyway rebuilds the schema and the seeder repopulates demo data.
 
 ---
 
